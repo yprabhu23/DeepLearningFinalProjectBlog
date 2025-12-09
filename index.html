@@ -112,6 +112,19 @@
       }
     }
   </style>
+
+<!-- MathJax for LaTeX rendering -->
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [["\\(", "\\)"]],
+      displayMath: [["\\[", "\\]"]]
+    }
+  };
+</script>
+<script id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
 </head>
 
 <body>
@@ -125,10 +138,144 @@
 
     <!-- Example Blog Post -->
     <article>
-      <h2>Section Title</h2>
+      <h2>Motivations</h2>
       <p>
-        Section text
+        Over the past decade, the landscape of artificial intelligence has undergone a dramatic transformation. The modern era of deep learning was sparked in 2012 with AlexNet (Krizhevsky et al., 2012), a breakthrough convolutional architecture that demonstrated the power of large-scale neural networks for perception. In the years that followed, deep learning rapidly expanded through innovations such as LSTMs, RNNs, Transformers, Diffusion models, and Flow Matching, culminating in today’s large-scale foundation models that power tools such as ChatGPT, Gemini, and Claude.<br><br>
+        As these models achieve increasingly general capabilities in digital domains, the next major frontier is embodied intelligence—systems that can perceive, act, and adapt within the physical world. A central challenge in embodied AI is connecting representation learning to control, enabling agents to map high-dimensional sensory input (e.g., images) to meaningful, goal-directed behavior.<br><br>
+        One influential paradigm in this space is Reinforcement Learning (RL), which has enabled robots and simulated agents to learn locomotion, manipulation, and navigation skills from interaction. A related and increasingly popular framework is Goal-Conditioned Reinforcement Learning (GCRL), where policies are trained to reach arbitrary goals specified in state or observation space. GCRL systems can be trained offline using large datasets through Goal-Conditioned Behavioral Cloning (GCBC), making them scalable and compatible with real-world data collection.<br><br>
+        A core question underlying all such systems is:<br>
+        How should visual observations be encoded for effective control?<br><br>
+        While many robotics pipelines rely on CNN-based encoders such as IMPALA, recent advances in vision—e.g., Vision Transformers (ViT) and self-supervised pretrained backbones such as DINOv3—raise the possibility that more powerful or pretrained representations might substantially improve visuomotor performance.
+        In this work, we examine this question directly using the OGBench visual control benchmark. We compare several visual encoders—including IMPALA, vanilla ViTs, and pretrained DINOv3—on goal-conditioned behavioral cloning across two visual GCRL tasks. Our results highlight surprising and important differences in how these encoders support visuomotor learning, and provide insight into the limitations of using pretrained vision models for control.
+
       </p>
+      <h2>Related Works</h2>
+      <section id="goal-conditioned-rl">
+  <h3>Goal-Conditioned Reinforcement Learning</h2>
+
+  <p>
+    Goal-conditioned reinforcement learning (GCRL) considers a controlled Markov process where the agent’s objective
+    is not to maximize a predefined reward function, but to reach a specified goal state. We assume an MDP without rewards,
+    defined by a state space \( S \), action space \( A \), an initial-state distribution \( \mu(s) \), and transition dynamics
+    \( p(s' \mid s, a) \).
+  </p>
+
+  <p>
+    In the offline setting, the agent only has access to a fixed dataset of trajectories
+  </p>
+
+  <p style="text-align:center;">
+    \( \mathcal{D} = \left\{ \left(s_0^{(n)}, a_0^{(n)}, s_1^{(n)}, \ldots, s_{T_n}^{(n)}\right) \right\}_{n=1}^{N}, \)
+  </p>
+
+  <p>
+    collected by some behavior policy, and cannot interact with the environment further.
+  </p>
+
+  <p>
+    The goal in offline GCRL is to learn a <em>goal-conditioned policy</em>
+    \( \pi(a \mid s, g) \) that can reliably reach a target state \( g \in S \)
+    from arbitrary starting states. Intuitively, the policy takes as input both the current state \( s \)
+    and a desired goal state \( g \), and outputs an action distribution over \( A \).
+  </p>
+
+  <p>
+    A common way to formalize this objective is to maximize the expected (discounted) probability of visiting the goal state:
+  </p>
+
+  <div style="text-align:center; margin: 1em 0;">
+    \[
+      \mathbb{E}_{\tau \sim p(\tau \mid g)} \left[ \sum_{t=0}^{T} \gamma^{t} \mathbf{1}\big[ s_t = g \big] \right],
+    \]
+  </div>
+
+  <p>
+    where \( T \) is the episode horizon, \( \gamma \in (0, 1) \) is the discount factor,
+    and \( p(\tau \mid g) \) is the trajectory distribution induced by the policy conditioned on goal \( g \):
+  </p>
+
+  <div style="text-align:center; margin: 1em 0;">
+    \[
+      p(\tau \mid g)
+      = \mu(s_0)\,\pi(a_0 \mid s_0, g)\,p(s_1 \mid s_0, a_0)\,\cdots\,p(s_T \mid s_{T-1}, a_{T-1}).
+    \]
+  </div>
+
+  <p>
+    In practice, many offline GCRL methods, including goal-conditioned behavioral cloning (GCBC),
+    make this objective tractable by <em>relabeling</em> states within the offline dataset as goals.
+    This allows the agent to learn from unlabeled trajectories without requiring explicit reward signals,
+    by treating future states along a trajectory as successful goals for earlier states.
+  </p>
+</section>
+<h3>OGBench</h3>
+  <p>
+    OGBench is a recent benchmark designed to evaluate offline goal-conditioned RL algorithms across a wide range
+    of environments, spanning both low-dimensional state tasks and high-dimensional visual control tasks.  The 
+    benchmark standardizes evaluation across 85 datasets and includes diverse domains such as navigation, object
+    manipulation, locomotion, and maze-solving. For image-based settings, OGBench adopts a fixed 
+    <code>IMPALA</code>-style convolutional encoder as the default visual backbone, focusing its comparisons primarily
+    on algorithmic differences (e.g., GCBC, HIQL, DT-GC, etc.) rather than representation learning. As a result,
+    the impact of replacing the default encoder with more modern visual architectures—such as Vision Transformers
+    or self-supervised pretrained models—remains largely unexplored.
+  </p>
+
+  <h3>Visual Encoders for Control</h3>
+  <p>
+    A central challenge in visuomotor learning is mapping raw pixel observations to control-relevant
+    representations. Prior work has explored several categories of visual encoders for robotics and RL.
+  </p>
+
+  <h4>IMPALA</h4>
+  <p>
+    The IMPALA encoder is a lightweight convolutional architecture originally introduced for large-scale 
+    reinforcement learning. Its hierarchical structure, local receptive fields, and strong inductive biases make
+    it well-suited for tasks requiring spatial precision and rapid feature extraction. As a result, IMPALA has
+    become the default choice in many visuomotor pipelines, including OGBench. However, IMPALA is comparatively 
+    shallow and lacks many of the representational advantages of modern vision backbones, motivating the
+    question of whether more expressive encoders might further improve performance.
+  </p>
+
+  <h4>ResNet</h4>
+  <p>
+    ResNet architectures, trained on large-scale supervised datasets such as ImageNet, offer deep hierarchical 
+    representations with strong general-purpose visual features. Several robotics systems leverage ResNet-based 
+    encoders (e.g., R3M, MVP) to incorporate semantic knowledge into imitation learning or policy learning. 
+    However, supervised pretraining often emphasizes semantic abstraction over low-level geometry, which may limit
+    performance in fine-grained control tasks that require precise spatial information.
+  </p>
+
+  <h4>Vision Transformers (ViT)</h4>
+  <p>
+    Vision Transformers (ViT) replace convolutional feature hierarchies with global self-attention over 
+    image patches. ViTs achieve remarkable performance on high-level vision tasks but are known to require 
+    large datasets and extensive regularization when trained from scratch. In robotics, ViTs have shown mixed 
+    results: while they can capture global context effectively, they often struggle to encode the local geometric 
+    cues necessary for continuous control. Their lack of built-in spatial inductive bias may hinder learning in
+    data-constrained offline GCRL settings.
+  </p>
+
+  <h4>DINOv3 and Self-Supervised Vision Models</h4>
+  <p>
+    DINOv3 represents the state of the art in self-supervised visual representation learning. Trained using 
+    contrastive and teacher–student objectives, DINOv3 produces features that excel in classification, segmentation,
+    and retrieval. However, recent studies on visuomotor learning suggest that self-supervised ViT encoders may 
+    fail to preserve fine-grained spatial information due to their inherent invariances to augmentation, texture,
+    and viewpoint. This can lead to representations that are semantically rich but poorly aligned with the 
+    demands of control, where small pixel-level differences correspond to large changes in system state.
+  </p>
+
+  <h3>Limitations of Existing Approaches</h3>
+  <p>
+    While prior work has evaluated pretraining strategies, goal representations, or algorithmic improvements, 
+    relatively little attention has been given to systematically studying the role of the <em>visual encoder</em> within
+    the OGBench framework. Most OGBench experiments rely on the IMPALA encoder by default, leaving open the 
+    question of whether modern high-capacity or pretrained architectures—such as ResNet, ViT, or DINOv3—could 
+    improve offline goal-conditioned control. Our work aims to address this gap by directly comparing these 
+    encoder families on two visual GCRL tasks, analyzing not only their final performance but also the structural
+    properties of their representations that affect downstream control.
+  </p>
+
     </article>
 
   </div>
