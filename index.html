@@ -241,26 +241,26 @@
     <article>
       <h2>Motivations</h2>
       <p>
-        Over the past decade, the landscape of artificial intelligence has changed almost beyond recognition.
-        The modern era of deep learning was catalyzed in 2012 by AlexNet <a href="#ref1">[1]</a>, a convolutional
-        network that dramatically outperformed traditional pipelines on the ImageNet benchmark. AlexNet did more than
-        win a competition: it provided a concrete demonstration that large, deep neural networks could be trained at
-        scale and deployed on real-world perception problems. In the years that followed, deep learning rapidly
+        Over the past decade, artificial intelligence has changed dramatically.
+        The modern era of deep learning started in 2012 with AlexNet <a href="#ref1">[1]</a>, a convolutional
+        network that outperformed traditional pipelines on ImageNet. AlexNet did more than
+        win a competition. It showed that large, deep neural networks could be trained at
+        scale and used for real-world perception problems. In the years that followed, deep learning rapidly
         expanded through architectures such as LSTMs and RNNs for sequence modeling, Transformers for attention-based
         reasoning, and generative models such as diffusion and flow-based models for high-fidelity synthesis.
       </p>
 
       <p>
-        These architectural innovations, combined with large datasets and powerful hardware, culminated in today’s
-        foundation models. Large language models like ChatGPT, Gemini, and Claude exhibit strikingly general capabilities:
-        they can summarize, translate, write code, reason about instructions, and sometimes even plan at a high level.
-        It is tempting to view these systems as the first step toward universal “world models” that can flexibly adapt
-        to new tasks given only minimal prompting.
+        These innovations, combined with large datasets and powerful hardware, led to today's
+        foundation models. Large language models like ChatGPT, Gemini, and Claude show general capabilities:
+        they can summarize, translate, write code, reason about instructions, and sometimes plan at a high level.
+        These systems might be the first step toward universal "world models" that can adapt
+        to new tasks with minimal prompting.
       </p>
 
       <p>
-        However, the success of foundation models has been concentrated in digital and symbolic domains. A parallel
-        effort in the research community and industry aims to bring comparable generality to <em>embodied</em> systems—
+        The success of foundation models has been concentrated in digital and symbolic domains. A parallel
+        effort in the research community and industry aims to bring comparable generality to <em>embodied</em> systems:
         robots and agents that perceive and act in the physical world. Startups and labs such as Physical Intelligence,
         SKILD, Figure, and others share a common dream: leverage large-scale representation learning and reinforcement
         learning (RL) to build general-purpose control systems that can manipulate objects, navigate complex
@@ -268,34 +268,34 @@
       </p>
 
       <p>
-        Realizing this vision requires bridging a substantial gap between representation learning and control.
-        Perception-only world models, such as those learned by self-supervised visual encoders, are not sufficient on
-        their own: an embodied agent must transform high-dimensional sensory input (e.g., images) into temporally
+        Realizing this vision requires bridging a gap between representation learning and control.
+        Perception-only world models, like those learned by self-supervised visual encoders, are not enough on
+        their own. An embodied agent must transform high-dimensional sensory input (images) into temporally
         coherent, goal-directed actions under uncertainty. Reinforcement learning provides a natural mathematical
         framework for this transformation. In RL, an agent interacts with an environment, receives observations, selects
         actions, and is guided by scalar rewards that encode task performance. RL has produced impressive results in
         locomotion, manipulation, and navigation, especially in simulation. Yet classical RL typically assumes
-        low-dimensional state representations, carefully engineered rewards, and extensive online interaction—assumptions
-        that are difficult to satisfy in real-world robotics.
+        low-dimensional state representations, carefully engineered rewards, and extensive online interaction. These assumptions
+        are difficult to satisfy in real-world robotics.
       </p>
 
       <p>
         Goal-Conditioned Reinforcement Learning (GCRL) relaxes some of these constraints by treating the desired outcome
         of an episode as an explicit input to the policy. Rather than learning a single task-specific behavior, the agent
         aims to reach arbitrary goal states \(g\), making it possible to train a <em>family</em> of behaviors
-        parameterized by the goal. When combined with offline learning and behavioral cloning, GCRL can be trained
+        parameterized by the goal.         When combined with offline learning and behavioral cloning, GCRL can be trained
         entirely from static datasets of trajectories, without requiring online access to the environment. This is
-        particularly appealing for robotics, where data collection is expensive and risky.
+        appealing for robotics, where data collection is expensive and risky.
       </p>
 
       <p>
-        In vision-based GCRL, the agent’s observations and goals are raw images. The quality of behavior is therefore
+        In vision-based GCRL, the agent's observations and goals are raw images. The quality of behavior is
         tightly coupled to the choice of visual encoder that maps pixels to latent representations. Historically, many
         RL pipelines have relied on relatively shallow convolutional networks such as IMPALA, which are easy to train
         from scratch and provide strong locality biases. At the same time, modern vision research has produced a wide
         range of powerful encoders, including deep ResNets, Vision Transformers (ViT), and self-supervised models like
         DINOv3 <a href="#ref2">[2]</a>. These models achieve impressive performance on classification, segmentation, and retrieval, but it
-        remains unclear whether—and how—their representations transfer to offline goal-conditioned control.
+        remains unclear whether and how their representations transfer to offline goal-conditioned control.
       </p>
 
       <p>
@@ -311,13 +311,12 @@
       </p>
 
       <p>
-        Concretely, we compare four encoders—IMPALA, an RL-adapted ResNet50, a Vision Transformer (ViT-Small) trained
-        from scratch, and a frozen DINOv3-S/16 backbone—on two visual OGBench tasks: a cube manipulation environment
-        and an AntMaze navigation task. Our experiments show that these encoders exhibit complementary strengths and
-        weaknesses, and that blindly importing state-of-the-art vision models into offline RL pipelines often fails to
+        We compare four encoders: IMPALA, an RL-adapted ResNet50, a Vision Transformer (ViT-Small) trained
+        from scratch, and a frozen DINOv3-S/16 backbone. We evaluate them on two visual OGBench tasks: a cube manipulation environment
+        and an AntMaze navigation task.         Our experiments show that these encoders have complementary strengths and
+        weaknesses. Blindly importing state-of-the-art vision models into offline RL pipelines often fails to
         yield the expected gains. The rest of this article formalizes the goal-conditioned setting, surveys related work,
-        describes our methods at a high level, presents empirical results, and concludes with a discussion of open
-        questions. Detailed architecture specifications, training hyperparameters, loss curves, representation analyses,
+        describes our methods, presents results, and discusses open questions. Detailed architecture specifications, training hyperparameters, loss curves, representation analyses,
         and environment settings are provided in the Appendix.
       </p>
 
@@ -362,9 +361,9 @@
       <p>
         In practice, directly optimizing this objective is difficult, and many offline GCRL methods make use of goal
         relabeling or hindsight techniques. Goal-conditioned behavioral cloning (GCBC), which is the agent of choice in this work,
-        follows a particularly simple strategy: treat future states in a trajectory as goals for earlier states, and
+        follows a simple strategy: treat future states in a trajectory as goals for earlier states, and
         train a supervised policy to imitate the observed actions given these goals. Despite its simplicity, GCBC has
-        proven surprisingly effective in offline settings, especially when combined with large and diverse datasets.
+        proven effective in offline settings, especially when combined with large and diverse datasets.
       </p>
 
       <h3>OGBench</h3>
@@ -377,8 +376,8 @@
 
       <p>
         For visual tasks, OGBench adopts an IMPALA-style convolutional encoder as the default backbone. This design
-        choice isolates algorithmic differences—such as value learning, goal relabeling strategies, and sequence
-        modeling—from representational differences. As a result, the majority of reported OGBench results focus on
+        choice isolates algorithmic differences (such as value learning, goal relabeling strategies, and sequence
+        modeling) from representational differences. As a result, the majority of reported OGBench results focus on
         comparing offline RL algorithms under a fixed encoder, implicitly assuming that the representation is “good
         enough” and that further improvements should come from better credit assignment or planning.
       </p>
@@ -475,8 +474,8 @@
       </ul>
 
       <p>
-        In the main text we focus on the conceptual differences between these encoders—capacity, inductive bias, and
-        pretraining—rather than implementation. Detailed layer configurations and embedding dimensions are
+        In the main text we focus on the conceptual differences between these encoders (capacity, inductive bias, and
+        pretraining) rather than implementation. Detailed layer configurations and embedding dimensions are
         given in Appendix A.
       </p>
 
@@ -636,7 +635,7 @@
       <p>
         The following videos illustrate the qualitative differences in navigation behavior between encoders. ResNet50
         demonstrates moderate navigation capability, successfully reaching the goal in some episodes but with less
-        consistent path planning than IMPALA. In contrast, ViT-Small struggles significantly with navigation, often
+        consistent path planning than IMPALA. In contrast, ViT-Small struggles with navigation, often
         getting stuck or failing to make progress toward the goal, consistent with its low success rate (0.03).
       </p>
 
@@ -653,14 +652,14 @@
             <source src="antmaze-ViT.mp4" type="video/mp4">
             Your browser does not support the video tag.
           </video>
-          <figcaption>Video 2: AntMaze-Medium navigation behavior with ViT-Small encoder. The agent struggles significantly with navigation, often getting stuck or failing to make progress toward the goal. This poor performance aligns with the low success rate (0.03) and the underfitting observed in the loss curves.</figcaption>
+          <figcaption>Video 2: AntMaze-Medium navigation behavior with ViT-Small encoder. The agent struggles with navigation, often getting stuck or failing to make progress toward the goal. This poor performance aligns with the low success rate (0.03) and the underfitting observed in the loss curves.</figcaption>
         </figure>
       </div>
 
       <h3>4.2 Visual Cube Manipulation</h3>
       <p>
-        On the Visual Cube manipulation task, the ranking of encoders changes dramatically. Here, ResNet50 achieves the
-        highest success rate (0.132), substantially outperforming IMPALA (0.02), the baseline, and the transformer-based encoders
+        On the Visual Cube manipulation task, the ranking of encoders changes. ResNet50 achieves the
+        highest success rate (0.132), outperforming IMPALA (0.02), the baseline, and the transformer-based encoders
         (both 0.00). This supports the hypothesis that deeper convolutional models are better suited to tasks that
         require precise geometric reasoning.
       </p>
@@ -743,9 +742,9 @@
 
       <h4>4.3.1 Task-Encoder Alignment</h4>
       <p>
-        The stark contrast in encoder performance across tasks reveals a fundamental principle: <em>task-encoder alignment</em>
+        The contrast in encoder performance across tasks shows that <em>task-encoder alignment</em>
         matters more than raw capacity or pretraining status. AntMaze navigation requires understanding global spatial
-        relationships—recognizing walls, corridors, and open spaces—but does not demand pixel-perfect precision. IMPALA's
+        relationships, recognizing walls, corridors, and open spaces, but does not demand pixel-perfect precision. IMPALA's
         shallow convolutional architecture, with its strong locality bias and modest depth, captures these coarse geometric
         features efficiently. The training and validation loss curves (Figures 1–2) show that IMPALA converges rapidly
         to low loss values, indicating that its representation space is well-matched to the navigation task's requirements.
@@ -762,9 +761,9 @@
 
       <h4>4.3.2 The Capacity-Data Trade-off</h4>
       <p>
-        Our results highlight a critical tension between model capacity and dataset size in offline RL. ResNet50's
+        Our results show a tension between model capacity and dataset size in offline RL. ResNet50's
         superior performance on Visual Cube suggests that deeper networks can learn more expressive representations when
-        the task demands it. However, on AntMaze, where the task requirements are simpler, ResNet50's additional capacity
+        the task demands it. On AntMaze, where the task requirements are simpler, ResNet50's additional capacity
         appears to be a liability: it converges more slowly and achieves higher validation loss than IMPALA. This
         suggests that in offline settings with fixed datasets, over-parameterization can lead to worse generalization,
         especially when the task does not require the additional representational capacity.
@@ -782,17 +781,17 @@
 
       <h4>4.3.3 Pretraining and Invariance Mismatch</h4>
       <p>
-        DINOv3-S/16's failure on both tasks, despite being pretrained on large-scale image data, reveals a critical
-        insight: <em>pretraining quality does not guarantee transfer to control</em>. DINOv3 was trained with
-        self-supervised objectives that encourage invariances to cropping, color jitter, and viewpoint changes—features
-        that are beneficial for high-level vision tasks like classification and segmentation. However, these same
+        DINOv3-S/16 fails on both tasks, despite being pretrained on large-scale image data. This shows that
+        <em>pretraining quality does not guarantee transfer to control</em>. DINOv3 was trained with
+        self-supervised objectives that encourage invariances to cropping, color jitter, and viewpoint changes. These features
+        are beneficial for high-level vision tasks like classification and segmentation. These same
         invariances are detrimental for control tasks where small visual differences correspond to large changes in the
         underlying state. The videos (Videos 5–6) show that DINOv3 fails to achieve successful manipulation, unable to
         distinguish between subtly different cube poses that require different actions.
       </p>
 
       <p>
-        This invariance mismatch is particularly pronounced in Visual Cube, where precise pose estimation is critical.
+        This invariance mismatch is most pronounced in Visual Cube, where precise pose estimation is critical.
         Even though DINOv3's frozen features might capture rich semantic information, they lack the geometric precision
         needed for manipulation. The validation loss curves show that DINOv3 fails to reduce error effectively, suggesting
         that the pretrained features are fundamentally misaligned with the control objective, and that training only the
@@ -818,21 +817,21 @@
 
       <h4>4.3.5 Implications for Offline GCRL</h4>
       <p>
-        These insights have several important implications for offline goal-conditioned RL research. First, encoder
+        These insights have several implications for offline goal-conditioned RL research. Encoder
         choice should be treated as a first-class hyperparameter, not an afterthought. The dramatic performance
         differences we observe (e.g., ResNet50 achieving 0.132 success rate on Visual Cube versus IMPALA's 0.02)
         demonstrate that encoder selection can have a larger impact than algorithmic choices in some settings.
       </p>
 
       <p>
-        Second, the task-encoder alignment principle suggests that researchers should carefully match encoder
+        The task-encoder alignment principle suggests that researchers should match encoder
         architectures to task requirements. For tasks requiring coarse spatial reasoning (like navigation), simpler
         architectures may be sufficient and more robust. For tasks requiring fine-grained geometric precision (like
         manipulation), deeper networks with stronger representational capacity may be necessary.
       </p>
 
       <p>
-        Finally, our results caution against blindly importing state-of-the-art vision models into control pipelines.
+        Our results also caution against blindly importing state-of-the-art vision models into control pipelines.
         Pretrained models like DINOv3, despite their success in high-level vision tasks, may not transfer effectively to
         control without careful adaptation. Future work should explore task-specific adaptation strategies, such as
         lightweight fine-tuning, adapter layers, or hybrid architectures that combine the benefits of pretraining with
@@ -840,32 +839,32 @@
       </p>
 
       <p>
-        These observations support a nuanced view: encoder performance in offline GCRL depends not only
+        Encoder performance in offline GCRL depends not only
         on capacity or pretraining quality, but also on how inductive biases and invariances interact with the specific
-        structure of the task. The "best" encoder is not universal—it depends on the task's perceptual demands, the
+        structure of the task. The "best" encoder is not universal. It depends on the task's perceptual demands, the
         available data, and the alignment between the encoder's representational capabilities and the control objective.
       </p>
 
       <h2>Discussion and Future Work</h2>
       <p>
-        Our experiments show that visual encoders play a decisive role in offline goal-conditioned reinforcement learning
+        Our experiments show that visual encoders play a key role in offline goal-conditioned reinforcement learning
         and behavioral cloning. There is no single “best” encoder across tasks: shallow CNNs like IMPALA can outperform
         deeper models on navigation tasks, while deeper ResNets can be crucial for precise geometric manipulation. At the
-        same time, transformer-based encoders—both from scratch and pretrained—do not automatically translate their
+        same time, transformer-based encoders (both from scratch and pretrained) do not automatically translate their
         success in high-level vision tasks into strong control performance under the constraints of OGBench.
       </p>
 
       <p>
-        These results suggest several directions for future work. First, alternative pooling strategies for transformer
-        features (e.g., spatial softmax, coordinate heads, or hybrid CNN–ViT architectures) might help preserve
-        geometry without sacrificing the benefits of global attention. Second, lightweight task-specific adaptation of
+        These results suggest several directions for future work. Alternative pooling strategies for transformer
+        features (spatial softmax, coordinate heads, or hybrid CNN–ViT architectures) might help preserve
+        geometry without sacrificing the benefits of global attention. Lightweight task-specific adaptation of
         pretrained encoders, such as adapter layers or partial fine-tuning, could better align self-supervised features
         with control objectives while retaining the benefits of large-scale pretraining.
       </p>
 
       <p>
         A broader takeaway is methodological: encoder choice should be treated as a first-class design axis in control
-        research, particularly in offline settings where the data distribution is fixed and representation learning is
+        research, especially in offline settings where the data distribution is fixed and representation learning is
         constrained. Benchmarks like OGBench are invaluable for algorithm comparison, but they also provide an
         opportunity to systematically investigate how representation learning affects control. We hope that this work
         encourages further studies at the intersection of visual encoding and offline goal-conditioned RL, and that
