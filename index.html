@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Evaluation of Visual Encoders for Offline Goal-Conditioned Reinforcement Learning and Behavioral Cloning in OGBench</title>
 
-  <!-- Inter + JetBrains Mono (similar to PIC aesthetic) -->
+  <!-- Inter + JetBrains Mono -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 
   <style>
@@ -28,7 +28,6 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Container */
     .wrapper {
       max-width: var(--max-width);
       margin: 0 auto;
@@ -53,7 +52,6 @@
       font-size: 0.9rem;
     }
 
-    /* Blog post styling */
     article {
       margin-bottom: 4rem;
     }
@@ -66,23 +64,29 @@
       font-weight: 500;
     }
 
+    article h3 {
+      font-family: "JetBrains Mono", monospace;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    article h4 {
+      font-family: "JetBrains Mono", monospace;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
     article p {
       margin-bottom: 1.2rem;
     }
 
-    article img {
-      width: 100%;
-      border-radius: 8px;
-      margin: 1.5rem 0;
-    }
-
-    pre {
-      background: var(--code-bg);
-      padding: 1rem;
-      overflow-x: auto;
-      border-radius: 6px;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.9rem;
+    article ul {
+      margin: 0 0 1.2rem 1.2rem;
+      padding-left: 1rem;
     }
 
     code {
@@ -91,6 +95,26 @@
       padding: 2px 5px;
       border-radius: 4px;
       font-size: 0.95rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      padding: 8px;
+    }
+
+    thead tr {
+      border-bottom: 2px solid #ccc;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #eee;
     }
 
     footer {
@@ -102,7 +126,6 @@
       color: var(--muted);
     }
 
-    /* Optional: dark mode */
     @media (prefers-color-scheme: dark) {
       :root {
         --bg: #0f0f0f;
@@ -113,18 +136,18 @@
     }
   </style>
 
-<!-- MathJax for LaTeX rendering -->
-<script>
-  window.MathJax = {
-    tex: {
-      inlineMath: [["\\(", "\\)"]],
-      displayMath: [["\\[", "\\]"]]
-    }
-  };
-</script>
-<script id="MathJax-script" async
-  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
-</script>
+  <!-- MathJax for LaTeX rendering -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [["\\(", "\\)"]],
+        displayMath: [["\\[", "\\]"]]
+      }
+    };
+  </script>
+  <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
 </head>
 
 <body>
@@ -133,439 +156,630 @@
       <h1>Evaluation of Visual Encoders for Offline Goal-Conditioned Reinforcement Learning and Behavioral Cloning in OGBench</h1>
       <p>Published: Dec. 9, 2025</p>
       <p>Authors: Yash Prabhu<sup>*</sup> (<a href="mailto:yprabhu@mit.edu">yprabhu@mit.edu</a>), Richard Lian<sup>*</sup> (<a href="mailto:rlian@mit.edu">rlian@mit.edu</a>)</p>
-      <p> <sup>*</sup> denotes equal contribution</p>
+      <p><sup>*</sup> denotes equal contribution</p>
     </header>
 
-    <!-- Example Blog Post -->
     <article>
       <h2>Motivations</h2>
       <p>
-        Over the past decade, the landscape of artificial intelligence has undergone a dramatic transformation. The modern era of deep learning was sparked in 2012 with AlexNet (Krizhevsky et al., 2012), a breakthrough convolutional architecture that demonstrated the power of large-scale neural networks for perception. In the years that followed, deep learning rapidly expanded through innovations such as LSTMs, RNNs, Transformers, Diffusion models, and Flow Matching, culminating in today’s large-scale foundation models that power tools such as ChatGPT, Gemini, and Claude.<br><br>
-        As these models achieve increasingly general capabilities in digital domains, the next major frontier is embodied intelligence—systems that can perceive, act, and adapt within the physical world. A central challenge in embodied AI is connecting representation learning to control, enabling agents to map high-dimensional sensory input (e.g., images) to meaningful, goal-directed behavior.<br><br>
-        One influential paradigm in this space is Reinforcement Learning (RL), which has enabled robots and simulated agents to learn locomotion, manipulation, and navigation skills from interaction. A related and increasingly popular framework is Goal-Conditioned Reinforcement Learning (GCRL), where policies are trained to reach arbitrary goals specified in state or observation space. GCRL systems can be trained offline using large datasets through Goal-Conditioned Behavioral Cloning (GCBC), making them scalable and compatible with real-world data collection.<br><br>
-        A core question underlying all such systems is:<br>
-        How should visual observations be encoded for effective control?<br><br>
-        While many robotics pipelines rely on CNN-based encoders such as IMPALA, recent advances in vision—e.g., Vision Transformers (ViT) and self-supervised pretrained backbones such as DINOv3—raise the possibility that more powerful or pretrained representations might substantially improve visuomotor performance.
-        In this work, we examine this question directly using the OGBench visual control benchmark. We compare several visual encoders—including IMPALA, vanilla ViTs, and pretrained DINOv3—on goal-conditioned behavioral cloning across two visual GCRL tasks. Our results highlight surprising and important differences in how these encoders support visuomotor learning, and provide insight into the limitations of using pretrained vision models for control.
-
+        Over the past decade, the landscape of artificial intelligence has changed almost beyond recognition.
+        The modern era of deep learning was catalyzed in 2012 by AlexNet [1], a convolutional
+        network that dramatically outperformed traditional pipelines on the ImageNet benchmark. AlexNet did more than
+        win a competition: it provided a concrete demonstration that large, deep neural networks could be trained at
+        scale and deployed on real-world perception problems. In the years that followed, deep learning rapidly
+        expanded through architectures such as LSTMs and RNNs for sequence modeling, Transformers for attention-based
+        reasoning, and generative models such as diffusion and flow-based models for high-fidelity synthesis.
       </p>
+
+      <p>
+        These architectural innovations, combined with large datasets and powerful hardware, culminated in today’s
+        foundation models. Large language models like ChatGPT, Gemini, and Claude exhibit strikingly general capabilities:
+        they can summarize, translate, write code, reason about instructions, and sometimes even plan at a high level.
+        It is tempting to view these systems as the first step toward universal “world models” that can flexibly adapt
+        to new tasks given only minimal prompting.
+      </p>
+
+      <p>
+        However, the success of foundation models has been concentrated in digital and symbolic domains. A parallel
+        effort in the research community and industry aims to bring comparable generality to <em>embodied</em> systems—
+        robots and agents that perceive and act in the physical world. Startups and labs such as Physical Intelligence,
+        SKILD, Figure, and others share a common dream: leverage large-scale representation learning and reinforcement
+        learning (RL) to build general-purpose control systems that can manipulate objects, navigate complex
+        environments, and adapt to new tasks with relatively little additional training.
+      </p>
+
+      <p>
+        Realizing this vision requires bridging a substantial gap between representation learning and control.
+        Perception-only world models, such as those learned by self-supervised visual encoders, are not sufficient on
+        their own: an embodied agent must transform high-dimensional sensory input (e.g., images) into temporally
+        coherent, goal-directed actions under uncertainty. Reinforcement learning provides a natural mathematical
+        framework for this transformation. In RL, an agent interacts with an environment, receives observations, selects
+        actions, and is guided by scalar rewards that encode task performance. RL has produced impressive results in
+        locomotion, manipulation, and navigation, especially in simulation. Yet classical RL typically assumes
+        low-dimensional state representations, carefully engineered rewards, and extensive online interaction—assumptions
+        that are difficult to satisfy in real-world robotics.
+      </p>
+
+      <p>
+        Goal-Conditioned Reinforcement Learning (GCRL) relaxes some of these constraints by treating the desired outcome
+        of an episode as an explicit input to the policy. Rather than learning a single task-specific behavior, the agent
+        aims to reach arbitrary goal states \(g\), making it possible to train a <em>family</em> of behaviors
+        parameterized by the goal. When combined with offline learning and behavioral cloning, GCRL can be trained
+        entirely from static datasets of trajectories, without requiring online access to the environment. This is
+        particularly appealing for robotics, where data collection is expensive and risky.
+      </p>
+
+      <p>
+        In vision-based GCRL, the agent’s observations and goals are raw images. The quality of behavior is therefore
+        tightly coupled to the choice of visual encoder that maps pixels to latent representations. Historically, many
+        RL pipelines have relied on relatively shallow convolutional networks such as IMPALA, which are easy to train
+        from scratch and provide strong locality biases. At the same time, modern vision research has produced a wide
+        range of powerful encoders, including deep ResNets, Vision Transformers (ViT), and self-supervised models like
+        DINOv3 [2]. These models achieve impressive performance on classification, segmentation, and retrieval, but it
+        remains unclear whether—and how—their representations transfer to offline goal-conditioned control.
+      </p>
+
+      <p>
+        This motivates the central question of our study:
+        <br><br>
+        <strong>How does the choice of visual encoder affect the performance of offline goal-conditioned reinforcement
+        learning and behavioral cloning on pixel-based tasks?</strong>
+        <br><br>
+        To answer this question, we turn to OGBench [3], a benchmark that standardizes offline GCRL evaluation across dozens
+        of environments. OGBench uses an IMPALA-style encoder by default, effectively fixing the representation and
+        varying only the algorithm. In contrast, we fix the algorithm to goal-conditioned behavioral cloning (GCBC) and
+        systematically vary the visual encoder.
+      </p>
+
+      <p>
+        Concretely, we compare four encoders—IMPALA, an RL-adapted ResNet50, a Vision Transformer (ViT-Small) trained
+        from scratch, and a frozen DINOv3-S/16 backbone—on two visual OGBench tasks: a cube manipulation environment
+        and an AntMaze navigation task. Our experiments show that these encoders exhibit complementary strengths and
+        weaknesses, and that blindly importing state-of-the-art vision models into offline RL pipelines often fails to
+        yield the expected gains. The rest of this article formalizes the goal-conditioned setting, surveys related work,
+        describes our methods at a high level, presents empirical results, and concludes with a discussion of open
+        questions. Detailed architecture specifications, training hyperparameters, loss curves, representation analyses,
+        and environment settings are provided in the Appendix.
+      </p>
+
       <h2>Related Works</h2>
-      <section id="goal-conditioned-rl">
-  <h3>Goal-Conditioned Reinforcement Learning</h2>
 
-  <p>
-    Goal-conditioned reinforcement learning (GCRL) considers a controlled Markov process where the agent’s objective
-    is not to maximize a predefined reward function, but to reach a specified goal state. We assume an MDP without rewards,
-    defined by a state space \( S \), action space \( A \), an initial-state distribution \( \mu(s) \), and transition dynamics
-    \( p(s' \mid s, a) \).
-  </p>
+      <h3>Goal-Conditioned Reinforcement Learning</h3>
+      <p>
+        Goal-conditioned reinforcement learning (GCRL) extends the standard RL formulation by conditioning the policy
+        and value functions on a goal state. We consider a controlled Markov process defined by state space
+        \( \mathcal{S} \), action space \( \mathcal{A} \), initial state distribution \( \mu(s) \), and transition
+        dynamics \( p(s' \mid s, a) \). In contrast to reward-centric formulations, we assume the environment dynamics
+        are given but do not rely on an externally specified reward function during training.
+      </p>
 
-  <p>
-    In the offline setting, the agent only has access to a fixed dataset of trajectories
-  </p>
+      <p>
+        In the offline setting, the agent observes a static dataset of trajectories:
+      </p>
 
-  <p style="text-align:center;">
-    \( \mathcal{D} = \left\{ \left(s_0^{(n)}, a_0^{(n)}, s_1^{(n)}, \ldots, s_{T_n}^{(n)}\right) \right\}_{n=1}^{N}, \)
-  </p>
+      <p style="text-align:center;">
+        \( \mathcal{D} = \left\{ (s_0^{(n)}, a_0^{(n)}, s_1^{(n)}, \ldots, s_{T_n}^{(n)}) \right\}_{n=1}^{N}, \)
+      </p>
 
-  <p>
-    collected by some behavior policy, and cannot interact with the environment further.
-  </p>
+      <p>
+        collected by one or more behavior policies. The agent cannot gather additional experience. The objective is to
+        learn a goal-conditioned policy \( \pi(a \mid s, g) \) that can reliably reach a target state \( g \in
+        \mathcal{S} \) from diverse starting states. A common formalization is to maximize the expected discounted
+        probability of hitting the goal:
+      </p>
 
-  <p>
-    The goal in offline GCRL is to learn a <em>goal-conditioned policy</em>
-    \( \pi(a \mid s, g) \) that can reliably reach a target state \( g \in S \)
-    from arbitrary starting states. Intuitively, the policy takes as input both the current state \( s \)
-    and a desired goal state \( g \), and outputs an action distribution over \( A \).
-  </p>
+      <div style="text-align:center; margin: 1em 0;">
+        \[
+          \mathbb{E}_{\tau \sim p(\tau \mid g)}
+          \left[ \sum_{t=0}^{T} \gamma^{t} \mathbf{1}[s_t = g] \right],
+        \]
+      </div>
 
-  <p>
-    A common way to formalize this objective is to maximize the expected (discounted) probability of visiting the goal state:
-  </p>
+      <p>
+        where \( \gamma \in (0,1) \) is a discount factor and \( p(\tau \mid g) \) is the trajectory distribution
+        induced by conditioning on goal \(g\).
+      </p>
 
-  <div style="text-align:center; margin: 1em 0;">
-    \[
-      \mathbb{E}_{\tau \sim p(\tau \mid g)} \left[ \sum_{t=0}^{T} \gamma^{t} \mathbf{1}\big[ s_t = g \big] \right],
-    \]
+      <p>
+        In practice, directly optimizing this objective is difficult, and many offline GCRL methods make use of goal
+        relabeling or hindsight techniques. Goal-conditioned behavioral cloning (GCBC), which is the agent of choice in this work,
+        follows a particularly simple strategy: treat future states in a trajectory as goals for earlier states, and
+        train a supervised policy to imitate the observed actions given these goals. Despite its simplicity, GCBC has
+        proven surprisingly effective in offline settings, especially when combined with large and diverse datasets.
+      </p>
+
+      <h3>OGBench</h3>
+      <p>
+        OGBench [3] is a benchmark suite designed to evaluate offline goal-conditioned RL methods across a diverse set of
+        tasks. It includes both low-dimensional state-based environments and higher-dimensional visual tasks, covering
+        navigation, manipulation, locomotion, and maze-solving. OGBench standardizes data formats, evaluation protocols,
+        and metrics, making it easier to compare algorithms fairly.
+      </p>
+
+      <p>
+        For visual tasks, OGBench adopts an IMPALA-style convolutional encoder as the default backbone. This design
+        choice isolates algorithmic differences—such as value learning, goal relabeling strategies, and sequence
+        modeling—from representational differences. As a result, the majority of reported OGBench results focus on
+        comparing offline RL algorithms under a fixed encoder, implicitly assuming that the representation is “good
+        enough” and that further improvements should come from better credit assignment or planning.
+      </p>
+
+      <p>
+        Our work complements this perspective by flipping the emphasis: we fix the algorithm (GCBC) and vary the visual
+        encoder. OGBench then serves as a controlled testbed to assess how encoder choice impacts offline goal-conditioned
+        control, holding everything else constant.
+      </p>
+
+      <h3>Visual Encoders for Control</h3>
+      <p>
+        A large body of work in visuomotor learning studies how to encode images into features suitable for control.
+        Early RL systems relied on relatively shallow CNNs trained from scratch on individual tasks (e.g., Atari,
+        DMControl), effectively letting the RL objective discover relevant features. The success of early convolutional
+        architectures on large-scale image classification, such as AlexNet [1], further motivated the use of CNN
+        backbones in control pipelines. More recent approaches incorporate
+        pretraining, either via supervised learning (e.g., ImageNet-pretrained ResNets) or self-supervision (e.g.,
+        contrastive learning, masked autoencoding).
+      </p>
+
+      <p>
+        Convolutional architectures such as IMPALA and ResNet provide strong spatial inductive biases and have proven
+        robust in RL, especially when normalized carefully. Vision Transformers (ViT) replace convolutions with
+        patch-based self-attention and achieve strong performance in high-level vision benchmarks but are known to be
+        data-hungry and less stable when trained from scratch on small datasets. Self-supervised models like DINOv3 [2]
+        produce representations that are highly effective for classification and segmentation, but their invariances may
+        obscure the fine-grained geometry needed for precise control.
+      </p>
+
+      <p>
+        Prior work has evaluated individual encoder choices in specific robotics settings, but systematic comparisons of
+        encoder families under a standardized offline GCRL benchmark are still rare. Our study aims to fill this gap.
+      </p>
+
+      <h2>Methods</h2>
+      <p>
+        We evaluate the impact of visual encoder architectures on offline goal-conditioned behavioral cloning using two
+        visual tasks from OGBench. In all experiments, the learning algorithm, dataset, goal relabeling scheme, and
+        policy head are held fixed; only the visual encoder is changed. This section gives a high-level overview of our
+        GCBC formulation, encoder variants, and experimental setup. Full architectural and hyperparameter details are
+        provided in the Appendix.
+      </p>
+
+      <h3>3.1 Goal-Conditioned Behavioral Cloning</h3>
+      <p>
+        The GCBC agent is written by OGBench. It treats each environment as an MDP \( (\mathcal{S}, \mathcal{A}, \mathcal{P}, \mathcal{R}, \gamma) \), where
+        states \(s \in \mathcal{S}\) are RGB images and actions \(a \in \mathcal{A}\) are continuous control inputs. The
+        offline dataset \( \mathcal{D} = \{ (s_t, a_t, s_{t+1}) \}_{t=1}^N \) consists of transitions collected by a
+        behavior policy. To train a goal-conditioned policy, hindsight relabeling is performed: for a given time step \(t\)
+        in a trajectory, a future state \(g\) is sampled from the same trajectory and treat it as the goal that the
+        policy is trying to reach.
+      </p>
+
+      <p>
+        Let \( \phi \) denote the visual encoder, mapping images to latent vectors. GCBC minimizes the negative
+        log-likelihood of observed actions under the goal-conditioned policy:
+      </p>
+
+      <div style="text-align:center; margin: 1em 0;">
+        \[
+          \mathcal{L}_{\text{GCBC}}(\theta)
+          = \mathbb{E}_{(s_t, a_t) \sim \mathcal{D}, \, g \sim p(\cdot \mid s_{t:T})}
+          \left[ - \log \pi_\theta(a_t \mid \phi(s_t), \phi(g)) \right].
+        \]
+      </div>
+
+      <p>
+        This objective is implemented as a standard supervised learning loss over minibatches drawn from the offline
+        dataset, with goal relabeling applied on the fly.
+      </p>
+
+      <h3>3.2 Visual Encoders (High-Level)</h3>
+      <p>
+        All environments provide RGB observations of shape \(H \times W \times 3\). To capture short-term temporal
+        information, we stack \(k = 3\) consecutive frames along the channel dimension, resulting in an input tensor of
+        shape \(H \times W \times 9\). The visual encoder \( \phi \) maps this tensor to a latent embedding
+        \( z \in \mathbb{R}^d \), which serves as input to the policy.
+      </p>
+
+      <p>
+        We consider four encoders (View Appendix for implementation details):
+      </p>
+      <ul>
+        <li><strong>IMPALA:</strong> The default OGBench convolutional encoder. It is relatively shallow but has strong
+          spatial inductive biases and is well-tested in RL benchmarks.</li>
+        <li><strong>ResNet50 (from scratch):</strong> A deeper convolutional network adapted for RL stability by
+          replacing BatchNorm with GroupNorm. This increases capacity while preserving locality.</li>
+        <li><strong>ViT-Small (from scratch):</strong> A compact Vision Transformer with patch-based self-attention,
+          trained end-to-end on the offline trajectories. This tests the architectural inductive bias of transformers
+          under limited data.</li>
+        <li><strong>DINOv3-S/16 (frozen) [2]:</strong> A self-supervised ViT encoder used as a fixed feature extractor. Only
+          the policy head is trained, probing the alignment between pretrained features and control objectives.</li>
+      </ul>
+
+      <p>
+        In the main text we focus on the conceptual differences between these encoders—capacity, inductive bias, and
+        pretraining—rather than implementation. Detailed layer configurations and embedding dimensions are
+        given in Appendix A.
+      </p>
+
+      <h3>3.3 Policy Network and Action Distribution</h3>
+      <p>
+        For each transition, we encode the current image stack \(s\) and the goal image stack \(g\) using the chosen
+        encoder \( \phi \), and concatenate their embeddings:
+      </p>
+
+      <div style="text-align:center; margin: 1em 0;">
+        \[
+          z_{\text{joint}} = [\phi(s); \phi(g)].
+        \]
+      </div>
+
+      <p>
+        This joint representation is passed through a 3-layer MLP with hidden size 512 and GELU activations to produce
+        the parameters of a Gaussian policy. To enforce action bounds, we apply a component-wise \(\tanh\) to sampled
+        actions:
+      </p>
+
+      <div style="text-align:center; margin: 1em 0;">
+        \[
+          \pi_\theta(a \mid s, g)
+          = \tanh\!\left(\mu_\psi(z_{\text{joint}}) + \sigma_\psi(z_{\text{joint}})\cdot \epsilon\right), \quad
+          \epsilon \sim \mathcal{N}(0, I).
+        \]
+      </div>
+
+      <p>
+        During training, stochastic sampling encourages the policy to explore the action space in imitation of the
+        behavior policy. During evaluation, we use the mean action (temperature 0) for deterministic performance.
+      </p>
+
+      <h3>3.4 Experimental Setup</h3>
+
+      <h4>3.4.1 Tasks</h4>
+      <p>
+        We evaluate encoders on two visual OGBench tasks that emphasize different aspects of perception and control:
+      </p>
+      <ul>
+        <li>
+          <strong>Visual Cube (Manipulation):</strong>
+          In <code>visual-cube-single-play-v0</code>, a robotic hand must manipulate a cube so that its pose matches a
+          target pose specified by a goal image. This is a high-precision geometric task where small changes in cube
+          orientation or position can determine success. The encoder must preserve detailed local geometry and be robust
+          to occlusions caused by the robot’s own fingers and palm.
+        </li>
+        <li>
+          <strong>AntMaze-Medium (Navigation):</strong>
+          In <code>antmaze-large-navigate-v0</code>, a quadrupedal ant robot must navigate a maze to reach a distant
+          goal location. This requires both low-level locomotion control and high-level spatial reasoning: the encoder
+          must represent the agent’s position relative to walls, corridors, and landmarks to support path planning.
+        </li>
+      </ul>
+
+      <h4>3.4.2 Training Protocol</h4>
+      <p>
+        All models are trained for 500,000 gradient steps using the Adam optimizer with learning rate
+        \( 3 \times 10^{-4} \). We use a batch size of 256 transitions per update. 
+      </p>
+
+      <p>
+        Training is implemented in JAX/Flax with <code>jax.jit</code> compilation for efficient execution on a single
+        GPU. A single random seed is used across encoder variants to facilitate fair comparison. Full optimizer, batch,
+        and hardware details are reported in Appendix B.
+      </p>
+
+      <h4>3.4.3 Evaluation</h4>
+      <p>
+        After training, each model is evaluated over 50 episodes per task. At evaluation time OGBench uses deterministic
+        actions by choosing the mean of the Gaussian policy. We report:
+      </p>
+      <ul>
+        <li><strong>Success Rate:</strong> the fraction of episodes that terminate in a goal state within the prescribed
+          tolerance.</li>
+        <li><strong>Episode Return:</strong> the cumulative sparse reward, which is positive when goals are reached.</li>
+      </ul>
+
+      <p>
+        To better understand training dynamics, we also track GCBC training loss and a held-out validation loss over
+        training, but we defer these curves to Appendix C to keep the main Results section focused on task performance.
+      </p>
+
+      <h2>Results</h2>
+      <table>
+        <thead>
+          <tr>
+            <th style="text-align:left;">Encoder</th>
+            <th style="text-align:center;">AntMaze-Medium</th>
+            <th style="text-align:center;">Single-Cube</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>IMPALA</td>
+            <td style="text-align:center; font-weight:600;">0.74</td>
+            <td style="text-align:center;">0.02</td>
+          </tr>
+          <tr>
+            <td>ResNet50</td>
+            <td style="text-align:center;">0.108</td>
+            <td style="text-align:center; font-weight:600;">0.132</td>
+          </tr>
+          <tr>
+            <td>DINOv3-S/16</td>
+            <td style="text-align:center;">0.076</td>
+            <td style="text-align:center;">0.00</td>
+          </tr>
+          <tr>
+            <td>ViT-Small</td>
+            <td style="text-align:center;">0.03</td>
+            <td style="text-align:center;">0.00</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p style="text-align:center; font-family:'JetBrains Mono', monospace; font-size:0.85rem; color:#666;">
+        Table 1: Success rates of different visual encoders under GCBC on two OGBench visual tasks.
+      </p>
+
+      <h3>4.1 AntMaze-Medium</h3>
+      <p>
+        On the AntMaze-Medium navigation task, the baseline IMPALA encoder achieves the highest success rate (0.74) by a
+        large margin. This is noteworthy because IMPALA is the shallowest encoder we consider. Its strong performance
+        suggests that, for this task, a relatively low-capacity convolutional network with strong locality bias and
+        stable optimization is sufficient to extract the global geometry needed for navigation.
+      </p>
+
+      <p>
+        ResNet50 and DINOv3-S/16 [2] achieve moderate but clearly inferior performance (0.108 and 0.076, respectively),
+        while the ViT-Small performs the worst (0.03). When we inspect training and validation losses (Appendix C), we find
+        that ResNet50 and DINOv3 converge more slowly and exhibit higher variance across epochs, consistent with more
+        unstable optimization. The ViT-Small shows clear signs of underfitting or representation collapse: loss decreases
+        initially but plateaus at a high value, indicating that the model fails to fully exploit the available data.
+      </p>
+
+      <p>
+        One plausible explanation is that AntMaze requires a mixture of local and global reasoning: the agent needs to
+        understand maze topology and wall locations but does not require extremely fine-grained texture or pose
+        estimation. IMPALA’s inductive bias and modest depth may strike the right balance here. In contrast, deeper
+        networks and transformers might be over-parameterized for the dataset size, making them harder to train
+        effectively in an offline regime without pretraining.
+      </p>
+
+      <h3>4.2 Visual Cube Manipulation</h3>
+      <p>
+        On the Visual Cube manipulation task, the ranking of encoders changes dramatically. Here, ResNet50 achieves the
+        highest success rate (0.132), substantially outperforming IMPALA (0.02), the baseline, and the transformer-based encoders
+        (both 0.00). This supports the hypothesis that deeper convolutional models are better suited to tasks that
+        require precise geometric reasoning.
+      </p>
+
+      <p>
+        Visual Cube demands accurate perception of cube orientation, edge alignment, and depth cues under frequent
+        occlusions from the robot hand. Our qualitative analysis suggests that ResNet50’s deeper feature hierarchy
+        enables it to build more robust representations of cube pose than IMPALA, which appears to capture only coarse
+        shape and position. The training and validation curves (Appendix C) show that ResNet50 converges to a lower
+        imitation loss on this task than other encoders, consistent with its superior performance.
+      </p>
+
+      <p>
+        Our ViT-Small and DINOv3-S/16 [2] both fail to solve the task, achieving zero success rate. This aligns with the intuition
+        that compressing all spatial information into a single CLS token without explicit spatial inductive biases
+        makes it difficult to preserve fine-grained pose information. Even though DINOv3 [2] is pretrained, its invariances
+        to cropping, color jitter, and viewpoint are likely misaligned with the demands of low-level manipulation, where
+        small visual differences correspond to large changes in the underlying state.
+      </p>
+
+      <h3>Insights</h3>
+      <p>
+        Comparing across both tasks, we see that:
+      </p>
+      <ul>
+        <li>IMPALA excels at AntMaze but struggles on Visual Cube.</li>
+        <li>ResNet50 shows the opposite pattern: weaker on AntMaze but clearly superior on Visual Cube.</li>
+        <li>Transformer-based encoders (ViT-Small, DINOv3-S/16) perform poorly in both settings under our training
+          protocol.</li>
+      </ul>
+      <p>
+        These observations support a nuanced view: encoder performance in offline GCRL depends not only
+        on capacity or pretraining quality, but also on how inductive biases and invariances interact with the specific
+        structure of the task.
+      </p>
+
+      <h2>Discussion and Future Work</h2>
+      <p>
+        Our experiments show that visual encoders play a decisive role in offline goal-conditioned reinforcement learning
+        and behavioral cloning. There is no single “best” encoder across tasks: shallow CNNs like IMPALA can outperform
+        deeper models on navigation tasks, while deeper ResNets can be crucial for precise geometric manipulation. At the
+        same time, transformer-based encoders—both from scratch and pretrained—do not automatically translate their
+        success in high-level vision tasks into strong control performance under the constraints of OGBench.
+      </p>
+
+      <p>
+        These results suggest several directions for future work. First, alternative pooling strategies for transformer
+        features (e.g., spatial softmax, coordinate heads, or hybrid CNN–ViT architectures) might help preserve
+        geometry without sacrificing the benefits of global attention. Second, lightweight task-specific adaptation of
+        pretrained encoders, such as adapter layers or partial fine-tuning, could better align self-supervised features
+        with control objectives while retaining the benefits of large-scale pretraining.
+      </p>
+
+      <p>
+        A broader takeaway is methodological: encoder choice should be treated as a first-class design axis in control
+        research, particularly in offline settings where the data distribution is fixed and representation learning is
+        constrained. Benchmarks like OGBench are invaluable for algorithm comparison, but they also provide an
+        opportunity to systematically investigate how representation learning affects control. We hope that this work
+        encourages further studies at the intersection of visual encoding and offline goal-conditioned RL, and that
+        future benchmarks will incorporate representation-focused baselines more explicitly.
+      </p>
+    </article>
+
+    
+    <article>
+      <h2>Appendix</h2>
+
+      <h3>A. Encoder Architecture Details</h3>
+      <p>
+        This section describes the encoder architectures used in our experiments in greater detail. All encoders operate
+        on stacked RGB frames of shape \(H \times W \times 3k\) with \(k = 3\). Unless otherwise specified, we use
+        \(H = W = 64\).
+      </p>
+
+      <h4>A.1 IMPALA</h4>
+      <p>
+        The IMPALA encoder follows the standard architecture used in many RL benchmarks:
+      </p>
+      <ul>
+        <li>Three convolutional blocks with ReLU activations.</li>
+        <li>Each block consists of a \(3 \times 3\) convolution with stride 2 followed by a \(3 \times 3\) convolution
+          with stride 1.</li>
+        <li>Channel sizes increase from 16 → 32 → 32 across blocks.</li>
+        <li>The final feature map is flattened and passed through a linear layer to obtain a latent embedding
+          \( z \in \mathbb{R}^{d} \), where \(d\) matches the policy input dimension used by OGBench.</li>
+      </ul>
+
+      <h4>A.2 ResNet50 (RL Variant)</h4>
+      <p>
+        Our ResNet50 backbone is adapted from the standard ImageNet configuration but modified for RL stability:
+      </p>
+      <ul>
+        <li>All <strong>Batch Normalization</strong> layers are replaced by <strong>Group Normalization</strong> (GN)
+          with 32 groups. This removes dependence on batch-level statistics and mitigates instability with correlated
+          trajectory samples.</li>
+        <li>The network uses an initial \(7 \times 7\) stride-2 convolution followed by a \(3 \times 3\) max-pooling
+          layer, and four residual stages with bottleneck blocks and channel sizes 256, 512, 1024, and 2048.</li>
+        <li>We apply global average pooling (GAP) over the final feature map to obtain a vector \(h \in \mathbb{R}^{2048}\)
+          per frame.</li>
+        <li>For frame stacks, the same ResNet is applied to each frame independently; the resulting vectors are
+          concatenated to form a representation in \(\mathbb{R}^{2048 \times 3}\), which is then projected through a
+          linear layer to the policy embedding dimension.</li>
+      </ul>
+
+      <h4>A.3 ViT-Small (from scratch)</h4>
+      <p>
+        The ViT-Small encoder is a compact Vision Transformer:
+      </p>
+      <ul>
+        <li>Each image frame is split into non-overlapping \(16 \times 16\) patches.</li>
+        <li>Patches are flattened and linearly projected to an embedding dimension \(D = 384\).</li>
+        <li>A learnable [CLS] token is prepended to the sequence, and learnable positional embeddings are added to all tokens.</li>
+        <li>The sequence is passed through 12 transformer encoder blocks, each with 6 attention heads, MLP dimension
+          1536, LayerNorm, and residual connections.</li>
+        <li>After the final block, we discard patch tokens and use the [CLS] token as the frame representation.</li>
+        <li>Frames in the stack are processed in parallel (by reshaping the batch), and their [CLS] tokens are
+          concatenated and linearly projected to the policy embedding dimension.</li>
+      </ul>
+
+      <h4>A.4 DINOv3-S/16 (Frozen)</h4>
+      <p>
+        For DINOv3-S/16, we use an off-the-shelf pretrained checkpoint provided by the original authors:
+      </p>
+      <ul>
+        <li>Architecture is essentially identical to ViT-Small (patch size 16, embedding dimension 384, 12 blocks, 6
+          heads).</li>
+        <li>We use the [CLS] token as the global representation for each frame.</li>
+        <li>Encoder weights are frozen: we stop gradients at the encoder output and only train the downstream policy
+          head.</li>
+      </ul>
+
+      <h3>B. Training Procedure and Hyperparameters</h3>
+      <p>
+        This section lists the main hyperparameters used in our experiments.
+      </p>
+      <ul>
+        <li><strong>Optimizer:</strong> Adam</li>
+        <li><strong>Learning rate:</strong> \(3 \times 10^{-4}\)</li>
+        <li><strong>Batch size:</strong> 256 transitions</li>
+        <li><strong>Number of gradient steps:</strong> 500,000</li>
+        <li><strong>Discount factor \(\gamma\):</strong> 0.99 (used only in environment reward computation, not in the
+          supervised GCBC loss)</li>
+        <li><strong>Frame stack:</strong> 3 consecutive frames</li>
+        <li><strong>Data augmentation:</strong> random crop with probability 0.5 (4-pixel padding and crop back to
+          \(64 \times 64\))</li>
+        <li><strong>Activation function:</strong> GELU in the policy MLP, ReLU in CNNs, GELU in ViTs</li>
+        <li><strong>Hardware:</strong> single NVIDIA GPU (e.g., RTX 3090) with JAX/Flax and XLA acceleration</li>
+      </ul>
+
+      <p>
+        All experiments use the same random seed for fair comparison across encoder variants. We did not perform
+        extensive hyperparameter tuning for individual encoders; rather, we chose a single GCBC configuration that was
+        stable across all models.
+      </p>
+
+      <h3>C. Training and Validation Loss Curves</h3>
+      <p>
+        To better understand optimization dynamics, we track both training loss (on mini-batches sampled from the
+        offline dataset) and validation loss (on a held-out subset of trajectories) over the course of training.
+      </p>
+
+      <p>
+        Qualitatively, we observe the following trends:
+      </p>
+      <ul>
+        <li><strong>IMPALA:</strong> training and validation losses decrease rapidly and plateau at relatively low
+          values on both tasks, indicating that the model fits the data well without severe overfitting.</li>
+        <li><strong>ResNet50:</strong> training loss decreases steadily, but validation loss flattens at a higher value
+          on AntMaze than on Visual Cube, consistent with its weaker performance on navigation and stronger performance
+          on manipulation.</li>
+        <li><strong>ViT-Small:</strong> both training and validation losses decrease initially but plateau early at
+          relatively high values, suggesting underfitting or difficulty in optimization.</li>
+        <li><strong>DINOv3-S/16:</strong> validation loss decreases slightly but remains worse than ResNet50 and IMPALA
+          on both tasks, consistent with the mismatch between self-supervised invariances and control objectives.</li>
+      </ul>
+
+      <p>
+        In a full paper version, we would include plots of these curves (e.g., Figure C.1–C.4) for each encoder-task
+        pair. For brevity, we omit the rendered figures here but follow standard practice in logging and monitoring.
+      </p>
+      
+    </article>
+
+    <h2>References</h2>
+    <ol style="line-height:1.6">
+
+      <li>
+        A. Krizhevsky, I. Sutskever, and G. E. Hinton.
+        <strong>ImageNet classification with deep convolutional neural networks.</strong>
+        In <em>Proceedings of the 26th International Conference on Neural Information Processing Systems</em>, 
+        pages 1097–1105, 2012.
+      </li>
+
+      <li>
+        O. Siméoni, H. V. Vo, M. Seitzer, F. Baldassarre, M. Oquab, C. Jose, V. Khalidov,
+        M. Szafraniec, S. Yi, M. Ramamonjisoa, F. Massa, D. Haziza, L. Wehrstedt,
+        J. Wang, T. Darcet, T. Moutakanni, L. Sentana, C. Roberts, A. Vedaldi, 
+        J. Tolan, J. Brandt, C. Couprie, J. Mairal, H. Jégou, P. Labatut, and P. Bojanowski.
+        <strong>DINOv3.</strong>
+        <em>arXiv preprint arXiv:2508.10104</em>, 2025.
+      </li>
+
+      <li>
+        S. Park, K. Frans, B. Eysenbach, and S. Levine.
+        <strong>OGBench: Benchmarking offline goal-conditioned RL.</strong>
+        <em>arXiv preprint arXiv:2410.20092</em>, 2025.
+      </li>
+
+      <li>
+        N. Rudin, D. Hoeller, P. Reist, and M. Hutter.
+        <strong>Learning to walk in minutes using massively parallel deep reinforcement learning.</strong>
+        <em>arXiv preprint arXiv:2109.11978</em>, 2021.
+      </li>
+
+      <li>
+        D. Kalashnikov, A. Irpan, P. Pastor, J. Ibarz, A. Herzog, E. Jang, D. Quillen,
+        E. Holly, M. Kalakrishnan, V. Vanhoucke, and S. Levine.
+        <strong>QT-Opt: Scalable deep reinforcement learning for vision-based robotic manipulation.</strong>
+        <em>arXiv preprint arXiv:1806.10293</em>, 2018.
+      </li>
+
+      <li>
+        OpenAI, J. Achiam, S. Adler, S. Agarwal, L. Ahmad, I. Akkaya, F. Leoni Aleman,
+        D. Almeida, J. Altenschmidt, S. Anadkat, R. Avila, I. Babuschkin, S. Balaji,
+        V. Balcom, P. Baltescu, H. Bao, M. Bavarian, J. Belgum, I. Bello, J. Berdine,
+        G. Bernadett-Shapiro, C. Berner, L. Bogdonoff, O. Boiko, M. Boyd,
+        and many others.
+        <strong>GPT-4 technical report.</strong>
+        <em>arXiv preprint arXiv:2303.08774</em>, 2024.
+      </li>
+
+    </ol>
   </div>
+</body>
+</html>
 
-  <p>
-    where \( T \) is the episode horizon, \( \gamma \in (0, 1) \) is the discount factor,
-    and \( p(\tau \mid g) \) is the trajectory distribution induced by the policy conditioned on goal \( g \):
-  </p>
-
-  <div style="text-align:center; margin: 1em 0;">
-    \[
-      p(\tau \mid g)
-      = \mu(s_0)\,\pi(a_0 \mid s_0, g)\,p(s_1 \mid s_0, a_0)\,\cdots\,p(s_T \mid s_{T-1}, a_{T-1}).
-    \]
-  </div>
-
-  <p>
-    In practice, many offline GCRL methods, including goal-conditioned behavioral cloning (GCBC),
-    make this objective tractable by <em>relabeling</em> states within the offline dataset as goals.
-    This allows the agent to learn from unlabeled trajectories without requiring explicit reward signals,
-    by treating future states along a trajectory as successful goals for earlier states.
-  </p>
-</section>
-<h3>OGBench</h3>
-  <p>
-    OGBench is a recent benchmark designed to evaluate offline goal-conditioned RL algorithms across a wide range
-    of environments, spanning both low-dimensional state tasks and high-dimensional visual control tasks.  The 
-    benchmark standardizes evaluation across 85 datasets and includes diverse domains such as navigation, object
-    manipulation, locomotion, and maze-solving. For image-based settings, OGBench adopts a fixed 
-    <code>IMPALA</code>-style convolutional encoder as the default visual backbone, focusing its comparisons primarily
-    on algorithmic differences (e.g., GCBC, HIQL, DT-GC, etc.) rather than representation learning. As a result,
-    the impact of replacing the default encoder with more modern visual architectures—such as Vision Transformers
-    or self-supervised pretrained models—remains largely unexplored.
-  </p>
-
-  <h3>Visual Encoders for Control</h3>
-  <p>
-    A central challenge in visuomotor learning is mapping raw pixel observations to control-relevant
-    representations. Prior work has explored several categories of visual encoders for robotics and RL.
-  </p>
-
-  <h4>IMPALA</h4>
-  <p>
-    The IMPALA encoder is a lightweight convolutional architecture originally introduced for large-scale 
-    reinforcement learning. Its hierarchical structure, local receptive fields, and strong inductive biases make
-    it well-suited for tasks requiring spatial precision and rapid feature extraction. As a result, IMPALA has
-    become the default choice in many visuomotor pipelines, including OGBench. However, IMPALA is comparatively 
-    shallow and lacks many of the representational advantages of modern vision backbones, motivating the
-    question of whether more expressive encoders might further improve performance.
-  </p>
-
-  <h4>ResNet</h4>
-  <p>
-    ResNet architectures, trained on large-scale supervised datasets such as ImageNet, offer deep hierarchical 
-    representations with strong general-purpose visual features. Several robotics systems leverage ResNet-based 
-    encoders (e.g., R3M, MVP) to incorporate semantic knowledge into imitation learning or policy learning. 
-    However, supervised pretraining often emphasizes semantic abstraction over low-level geometry, which may limit
-    performance in fine-grained control tasks that require precise spatial information.
-  </p>
-
-  <h4>Vision Transformers (ViT)</h4>
-  <p>
-    Vision Transformers (ViT) replace convolutional feature hierarchies with global self-attention over 
-    image patches. ViTs achieve remarkable performance on high-level vision tasks but are known to require 
-    large datasets and extensive regularization when trained from scratch. In robotics, ViTs have shown mixed 
-    results: while they can capture global context effectively, they often struggle to encode the local geometric 
-    cues necessary for continuous control. Their lack of built-in spatial inductive bias may hinder learning in
-    data-constrained offline GCRL settings.
-  </p>
-
-  <h4>DINOv3 and Self-Supervised Vision Models</h4>
-  <p>
-    DINOv3 represents the state of the art in self-supervised visual representation learning. Trained using 
-    contrastive and teacher–student objectives, DINOv3 produces features that excel in classification, segmentation,
-    and retrieval. However, recent studies on visuomotor learning suggest that self-supervised ViT encoders may 
-    fail to preserve fine-grained spatial information due to their inherent invariances to augmentation, texture,
-    and viewpoint. This can lead to representations that are semantically rich but poorly aligned with the 
-    demands of control, where small pixel-level differences correspond to large changes in system state.
-  </p>
-
-  <h3>Limitations of Existing Approaches</h3>
-  <p>
-    While prior work has evaluated pretraining strategies, goal representations, or algorithmic improvements, 
-    relatively little attention has been given to systematically studying the role of the <em>visual encoder</em> within
-    the OGBench framework. Most OGBench experiments rely on the IMPALA encoder by default, leaving open the 
-    question of whether modern high-capacity or pretrained architectures—such as ResNet, ViT, or DINOv3—could 
-    improve offline goal-conditioned control. Our work aims to address this gap by directly comparing these 
-    encoder families on two visual GCRL tasks, analyzing not only their final performance but also the structural
-    properties of their representations that affect downstream control.
-  </p>
-
-  <h2>Methods</h2>
-  <p>
-    We evaluate the impact of visual architectures on offline goal-conditioned reinforcement learning using a standardized Goal-Conditioned Behavioral Cloning (GCBC) framework. For our experiments, the
-    learning algorithm and data are fixed while we vary the visual encoder backbone (\(\phi\)) and the environment domain.
-    This section details the GCBC formulation, the specific encoder architectures implemented in JAX/Flax, and the
-    training procedures.
-  </p>
-  
-  <h3>3.1 Goal-Conditioned Behavioral Cloning (GCBC)</h3>
-  <p>
-    We formulate the control problem as a Markov Decision Process (MDP) defined by a tuple \((\mathcal{S}, \mathcal{A},
-    \mathcal{P}, \mathcal{R}, \gamma)\), where the state space \(\mathcal{S}\) consists of high-dimensional visual
-    observations (images). In the goal-conditioned setting, the agent must learn a policy \(\pi(a_t | s_t, g)\) that
-    reaches a goal state \(g \in \mathcal{S}\).
-  </p>
-  <p>
-    Since we operate in the <strong>offline</strong> setting, the agent does not interact with the environment during
-    training. Instead, it learns purely from a static dataset \(\mathcal{D} = \{ (s_t, a_t, s_{t+1}) \}_{i=1}^N\)
-    collected by a behavior policy. We employ Goal-Conditioned Behavioral Cloning (GCBC), which treats the problem as
-    supervised learning. The objective is to maximize the log-likelihood of the expert actions given the current state and
-    a future goal:
-  </p>
-  <div style="text-align:center; margin: 1em 0;">
-    \[
-    \mathcal{L}_{GCBC}(\theta) = \mathbb{E}_{(s_t, a_t) \sim \mathcal{D}, \, g \sim p(\cdot|s_{t:T})} \left[ - \log
-    \pi_\theta(a_t | \phi(s_t), \phi(g)) \right]
-    \]
-  </div>
-  <p>
-    <strong>Goal Relabeling:</strong> To enable goal-conditioned learning from trajectories that may not have reached
-    their original intended goals, we use <em>hindsight relabeling</em>. For every transition \((s_t, a_t)\) sampled
-    from the batch, we sample a goal \(g\) from the future states \(s_{k}\) (where \(k > t\)) within the same trajectory.
-  </p>
-  
-  <h3>3.2 Visual Encoder Architectures</h3>
-  <p>
-    For the following experiments, we use a visual encoder \(\phi\), which maps high-dimensional pixel inputs \(s \in
-    \mathbb{R}^{H \times W \times C}\) to a latent embedding \(z \in \mathbb{R}^{d}\). All experiments use a <strong>frame
-      stack</strong>
-    of \(k=3\). Frame stacking is a standard technique in continuous control where \(k\) consecutive observations are
-    concatenated along the channel dimension. This transforms the input volume from standard RGB (\(3\) channels) to a
-    \(9\)-channel tensor, allowing the static encoder to implicitly capture temporal dynamics, such as object velocity and
-    acceleration, which necessary for recovering the underlying Markovian state.
-  </p>
-  <p>
-    We compare two distinct visual encoder architectures implemented in <strong>Flax</strong>, a high-performance neural
-    network library built on <strong>JAX</strong>. We utilize Flax because itdecouples
-    model parameters from state and because of its easy-to-use integration with XLA (Accelerated Linear Algebra) for efficient JIT
-    compilation and hardware acceleration. We implement two visual encoder architectures: ResNet50 and Vision Transformer (ViT-Small).
-  </p>
-  
-  <h4>3.2.1 ResNet50 (Convolutional Baseline)</h4>
-  
-  <p>
-    We implement a modified ResNet50 architecture designed explicitly for stable reinforcement learning. Unlike standard
-    computer vision implementations which rely on <strong>Batch Normalization (BN)</strong>, our ResNet50 replaces all
-    normalization layers with <strong>Group
-      Normalization</strong> (GN) using 32 groups.
-  </p>
-  
-  <p>
-    Batch Normalization standardizes activations by computing the mean \(\mu_B\)
-    and variance \(\sigma^2_B\) across the current mini-batch dimensions. While effective in supervised classification, BN
-    is unstable in Reinforcement Learning for two reasons:
-  </p>
-  <ul>
-    <li><strong>Non-i.i.d. Data:</strong> RL training data is sampled from trajectories where consecutive frames are
-      highly correlated (non-independent and identically distributed). This correlation biases the batch statistics
-      \(\mu_B\) and \(\sigma^2_B\), causing the network to learn features dependent on the specific batch composition
-      rather than the image content itself.</li>
-    <li><strong>Training/Inference Discrepancy:</strong> BN relies on running statistics during inference, which can drift
-      significantly from training statistics in RL policies.</li>
-  </ul>
-  <p>
-    In contrast, <strong>Group Normalization</strong> divides the channels into groups and computes statistics
-    within each sample independently of the batch dimension. This ensures that the feature extraction remains
-    deterministic and stable regardless of batch size or sampling correlations.
-  </p>
-  
-  <ul>
-    <li>We utilize the standard ResNet bottleneck design to balance
-      computational efficiency with network depth. The architecture consists of an initial \(7 \times 7\) convolution
-      followed by four distinct stages. Each stage is comprised of "bottleneck" blocks—a stack of \(1\times1\),
-      \(3\times3\), and \(1\times1\) convolutions—that progressively increase channel depth (256 \(\to\) 512 \(\to\) 1024
-      \(\to\) 2048) while downsampling spatial resolution. This hierarchical structure allows the model to capture
-      features at varying levels of abstraction, from low-level edges and textures in early layers to high-level semantic
-      object parts in deeper layers.</li>
-    <li><strong>Temporal Processing:</strong> To handle frame stacking, the encoder processes the 3 frames sequentially,
-      sharing weights across frames. The resulting feature maps are pooled via Global Average Pooling to
-      \(\mathbb{R}^{2048}\) per frame, then concatenated to form a temporal representation \(z \in \mathbb{R}^{2048 \times
-      3}\).</li>
-    <li><strong>Head:</strong> A final Multi-Layer Perceptron (MLP) projects this concatenated vector to the actor's
-      dimension.</li>
-  </ul>
-  
-  <h4>3.2.2 Vision Transformer (ViT-Small)</h4>
-  <p>
-    To assess the utility of attention-based architectures without large-scale pretraining, we train a
-    Vision Transformer (ViT-Small) from scratch. This allows us to evaluate the architectural inductive bias of
-    Transformers versus CNNs directly.
-  </p>
-  <p>
-    The ViT-Small architecture consists of a stack of 12 Transformer Encoder blocks. Each block contains two primary sub-layers: <strong>Multi-Head Self-Attention
-      (MSA)</strong> (with 6 heads) and a Multi-Layer Perceptron (MLP), with Layer Normalization (LN) applied before
-    each layer and residual connections after each. The MSA mechanism allows every patch to attend to every other patch
-    in the image simultaneously, enabling the model to capture long-range dependencies and global context from the very
-    first layer, which is adistinct contrast to the local receptive fields of the ResNet.
-  </p>
-  <ul>
-    <li><strong>Patch Embedding and Tokenization:</strong> Unlike CNNs which process pixels via sliding windows, the ViT
-      treats an image as a sequence of discrete tokens. The input image is divided into a grid of \(16 \times 16\)
-      non-overlapping patches. Each patch is flattened into a 1D vector and mapped to the model's latent dimension
-      \(D=384\) via a trainable linear projection. Since the subsequent self-attention mechanism is permutation-invariant
-      (it does not inherently "know" which patch is next to which), we add learnable <strong>positional
-        embeddings</strong> to each token to inject spatial structure into the sequence.</li>
-  
-    <li><strong>The Classification Token:</strong> Inspired by BERT, we prepend a special learnable token—the
-      <strong>classification token</strong>—to the sequence of patch embeddings. This token serves as a designated
-      "sink" for global information; as data flows through the transformer layers, the self-attention mechanism updates
-      the classification token to aggregate relevant features from all other spatial patches. We use the final state of this single
-      token as the global representation of the image, discarding the individual patch tokens.</li>
-  
-    <li><strong>Parallel Frame Processing:</strong> Unlike the ResNet implementation, the ViT encoder reshapes the input
-      batch \((B, H, W, 3k)\) to \((B \times k, H, W, 3)\). This allows all frames in the temporal stack to be processed
-      in parallel as independent images. The final representation is formed by concatenating the output classification tokens of
-      the frames, resulting in a global representation of the entire sequence.</li>
-  </ul>
-  
-  <h3>3.3 Policy Network and Action Inference</h3>
-  <p>
-    To map the learned visual representations to control actions, the encoded state \(\phi(s)\) and encoded goal
-    \(\phi(g)\) are first concatenated to form a joint embedding vector: \(z_{joint} = [\phi(s); \phi(g)]\). This vector
-    serves as the input to the policy network \(\pi_\theta\).
-  </p>
-  
-  <p>
-    The policy is parameterized as a <strong>Tanh-Squashed Gaussian Distribution</strong>. This is a standard formulation
-    in continuous control that enforces the physical constraints of the robot. The network
-    outputs a mean \(\mu\) and a standard deviation \(\sigma\), which define a normal distribution. We sample from this
-    distribution and pass the result through a hyperbolic tangent (\(\tanh\)) function:
-  </p>
-  
-  <div style="text-align:center; margin: 1em 0;">
-    \[
-    \pi_\theta(a|s,g) = \tanh(\mu_\psi(z_{joint}) + \sigma_\psi(z_{joint}) \cdot \epsilon), \quad \epsilon \sim
-    \mathcal{N}(0, I)
-    \]
-  </div>
-  
-  <p>
-    <strong>Why Squashing?</strong> Standard Gaussian policies have infinite support \((-\infty, \infty)\), but robotic
-    actuators operate within strict physical limits. The \(\tanh\) transformation
-    smoothly maps the unbounded Gaussian samples into the bounded interval \((-1, 1)\), ensuring all generated actions are
-    valid and differentiable.
-  </p>
-  
-  <p>
-    The parameters \(\mu_\psi\) and \(\sigma_\psi\) are predicted by a 3-layer Multi-Layer Perceptron (MLP) with hidden
-    dimensions \([512, 512, 512]\). We utilize <strong>GELU (Gaussian Error Linear Unit)</strong> activations instead of
-    the standard ReLU. GELU weights inputs by their value, rather than gating inputs by their sign, providing a smoother
-    optimization landscape that often leads to faster convergence in deep transformers and policy networks.
-  </p>
-  
-  <h3>3.4 Experimental Setup and Training Pipeline</h3>
-  
-  <h4>3.4.1 Tasks</h4>
-  <p>
-    We evaluate these architectures on two distinct domains from the OGBench suite. These tasks were selected to decouple
-    <strong>local geometric precision</strong> from <strong>global semantic planning</strong>, allowing us to study
-    specific weaknesses in the encoder representations.
-  </p>
-  <ul>
-    <li><strong>Visual Cube (Manipulation):</strong> In the <code>visual-cube-single-play-v0</code> task, a robotic hand
-      must manipulate a cube to match a target pose specified by a goal image. This is a <strong>high-precision geometric
-        task</strong> operating on the SE(3) manifold (translation and rotation). To succeed, the visual encoder must
-      resolve fine-grained spatial details, such as edge alignment, corner positions, and depth cues, while remaining robust
-      to occlusions caused by the robot manipulator itself. It tests the encoder's ability to preserve strict spatial relationships and contact dynamics. We hypothesize CNNs
-      (ResNet) may outperform ViTs here due to their strong spatial inductive biases and preservation of feature maps.</li>
-  
-    <li><strong>AntMaze (Locomotion/Navigation):</strong> In the <code>antmaze-large-navigate-v0</code> task, a
-      high-dimensional quadrupedal robot ("Ant") must navigate a U-shaped maze to reach a target location. This task poses
-      a dual challenge: <strong>low-level locomotion control</strong> (coordinating joint torques to move) and
-      <strong>high-level path planning</strong> (understanding global maze geometry). This tests the encoder's ability to
-      localize the agent relative to distant landmarks and form a coherent global map from pixel observations. Unlike the local precision required for the Cube, this task benefits from the Transformer's global self-attention, which
-      can integrate features across the entire image (e.g., relating a landmark in the top-left to the agent in the
-      bottom-right) more effectively than the local receptive fields of a CNN.</li>
-  </ul>
-  
-  <h4>3.4.2 Training Procedure</h4>
-  <p>
-    <strong>Optimization Strategy:</strong> All models are trained for <strong>500,000 gradient
-      steps</strong>. This duration was empirically chosen to ensure convergence of the actor loss without incurring
-    excessive computational costs or overfitting to the finite offline dataset. We utilize the <strong>Adam
-      optimizer</strong> with a learning rate of \(\alpha = 3 \times 10^{-4}\). This specific learning rate is a standard
-    heuristic in Deep Reinforcement Learning (often referred to as "Karpathy's Constant"), known to provide a stable
-    balance between learning speed and policy stability across diverse architectures.
-  </p>
-  
-  <ul>
-    <li><strong>Batch Size (256):</strong> We sample minibatches of \(N=256\) transitions. This size provides a
-      sufficiently low-variance estimate of the policy gradient to stabilize the updates of our large encoders
-      (ResNet/ViT).</li>
-  
-    <li><strong>Data Augmentation (Random Crops):</strong> To mitigate the risk of overfitting, a primary concern when
-      training high-capacity vision backbones on static offline datasets, we apply <strong>Random Crop
-        Augmentation</strong>. With probability \(p=0.5\), the original \(64 \times 64\) observation is padded (by 4
-      pixels) and then randomly cropped back to the original size. This forces the encoder to learn
-      <strong>translation-invariant features</strong> rather than memorizing exact pixel coordinates, significantly
-      improving the policy's robustness to small visual perturbations during evaluation.</li>
-  
-    <li><strong>Hardware:</strong> Training is performed using JAX/Flax, utilizing <code>jax.jit</code> (Just-In-Time
-      compilation) to fuse operations and maximize throughput on GPU hardware.</li>
-  </ul>
-  
-  <h4>3.4.3 Evaluation Procedure</h4>
-  <p>
-    Evaluation is conducted at the end of training. We execute 50 distinct episodes per task to
-    account for stochasticity in the environment initialization.
-  </p>
-  <p>
-    <strong>Deterministic Inference:</strong> During training, the policy outputs a Gaussian distribution
-    \(\mathcal{N}(\mu, \sigma)\) and we sample actions \(a \sim \pi\) to model the diversity of the expert data. However,
-    during evaluation, we set the <strong>temperature to 0</strong>. This is equivalent to setting the standard deviation
-    \(\sigma \to 0\), effectively collapsing the distribution to its mode (the mean \(\mu\)). This ensures that the agent
-    always executes its "best guess" action for a given state, eliminating exploration noise that could lead to failure in
-    precision-critical tasks like the Visual Cube.
-  </p>
-  <p>
-    We report the <strong>Success Rate</strong> (the fraction of episodes where the goal state was achieved) and the
-    <strong>Episode Return</strong> (cumulative sparse reward).
-  </p>
-  
-  <h3>3.5 Visual Encoder Architecture Decisions</h3>
-  <p>
-    To ensure a fair comparison between Convolutional and Transformer-based encoders, we have defined our training strategy and task selection criteria below. 
-  </p>
-  
-  <h4>A. Training Strategy: Frozen vs. Fine-tuned</h4>
-  <p>
-    A critical variable in evaluating visual encoders is whether the backbone is treated as a fixed feature extractor or a
-    trainable component. Our experiments strictly differentiate between these two regimes based on the encoder type
-    defined in <code>encoders.py</code>:
-  </p>
-  <h4>A. Training Strategy: Frozen vs. Fine-tuned</h4>
-  <p>
-    <strong>ViT-Small & ResNet50 (Trainable from Scratch):</strong><br>
-    For the architectural comparison between Convolutional Networks and Vision Transformers, we use a
-    fine-tuning strategy. The encoder weights are initialized randomly using Xavier/He initialization
-    rather than loading pretrained checkpoints. During the optimization process, gradients are backpropagated through the
-    entire encoder backbone, allowing the model to learn task-specific visual features directly from the offline
-    trajectories. This design choice is important as it isolates the <strong>architectural inductive
-      bias</strong> of the models. By training both the ResNet and ViT from scratch on the exact same dataset, we
-    determine whether the inherent structure of a Transformer (patch-based processing with global attention) is superior
-    to a Convolutional Network (hierarchical sliding windows) for control, independent of any external data advantages. Training Transformers from scratch on limited data poses a risk of overfitting; to mitigate this, we
-    intentionally utilize a compact ViT configuration (embedding dimension of 384 with 6 heads) rather than larger
-    standard variants, and we rely on the strong regularization provided by random crop augmentations to enforce
-    generalization.
-  </p>
-  
-  <p>
-    <strong>DINOv3 (Frozen Representation):</strong><br>
-    In contrast to the fully trainable approach, the we use a "frozen representation" to evaluate self-supervised models like DINOv3. In this setup, the encoder weights are loaded from a pretrained checkpoint and treated
-    as static, non-trainable functions during the control learning phase. The gradient flow is explicitly halted at the
-    output of the encoder, meaning the optimizer only updates the parameters of the downstream policy MLP. This
-    methodology focuses on evluating the quality and alignment of general-purpose features acquired during large-scale pretraining rather than testing the architecture's ability to
-    <em>learn</em> from the task data.
-  </p>
-  
-  <h4>B. Integration Architecture: Aggregating Spatial Features</h4>
-  <p>
-    A fundamental challenge in comparing Convolutional Networks and Vision Transformers lies in their differing mechanisms
-    for condensing spatial information into a compact state vector suitable for the policy MLP. For the ResNet50
-    architecture, we utilize <strong>Global Average Pooling (GAP)</strong> as the primary aggregation mechanism. The final
-    convolutional stage outputs a high-dimensional feature volume (preserving spatial dimensions \(H' \times W'\)). By
-    computing the mean activation across these spatial dimensions, we produce a single vector that represents the presence
-    or absence of features independent of their location. While this enforces translation invariance, a desirable property
-    for object classification, it hinders visuomotor control, where the precise spatial coordinates of an
-    object (e.g., the exact corner of a cube) are often more critical than its semantic identity. The network is thus
-    forced to rely on the remaining channel-wise activations to implicitly encode relative spatial configurations.
-  </p>
-  
-  <p>
-    For the Vision Transformer, we adopt a different method focused on the <strong>Classification
-      Token</strong>. Unlike CNNs that process grids, the ViT outputs a sequence of token embeddings corresponding to
-    image patches. Rather than averaging these patches (which would blur distinct features) or applying a spatial softmax
-    (which is common in robotics to recover coordinates), we strictly extract the learnable classification token to represent the
-    entire visual observation. This design aligns with the original ViT architecture, which imposes a strong
-    architectural bottleneck: the model must learn to utilize its self-attention layers to "route" all relevant spatial
-    and geometric information from the patch tokens into this single abstract vector. This creates a distinct trade-off;
-    while the attention mechanism allows for global context integration, forcing all metric geometry (such as precise
-    depth and contact points) into the clasification token without explicit coordinate inductive biases may limit performance on
-    high-precision tasks like the Visual Cube.
-  </p>
