@@ -52,6 +52,40 @@
       font-size: 0.9rem;
     }
 
+    .header-links {
+      margin-top: 1rem;
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .header-links a {
+      color: var(--text);
+      text-decoration: none;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.9rem;
+      padding: 0.4rem 0.8rem;
+      border: 1px solid var(--muted);
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .header-links a:hover {
+      background: var(--muted);
+      color: var(--bg);
+      border-color: var(--text);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .header-links a {
+        border-color: var(--muted);
+      }
+      .header-links a:hover {
+        background: var(--muted);
+        color: var(--bg);
+      }
+    }
+
     article {
       margin-bottom: 4rem;
     }
@@ -126,6 +160,47 @@
       color: var(--muted);
     }
 
+    figure {
+      margin: 2rem 0;
+      text-align: center;
+    }
+
+    figure img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    figure video {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      background: #000;
+    }
+
+    figure figcaption {
+      margin-top: 0.75rem;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .figure-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    @media (max-width: 600px) {
+      .figure-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media (prefers-color-scheme: dark) {
       :root {
         --bg: #0f0f0f;
@@ -157,13 +232,17 @@
       <p>Published: Dec. 9, 2025</p>
       <p>Authors: Yash Prabhu<sup>*</sup> (<a href="mailto:yprabhu@mit.edu">yprabhu@mit.edu</a>), Richard Lian<sup>*</sup> (<a href="mailto:rlian@mit.edu">rlian@mit.edu</a>)</p>
       <p><sup>*</sup> denotes equal contribution</p>
+      <div class="header-links">
+        <a href="https://wandb.ai/yprabhu-massachusetts-institute-of-technology/OGBench" target="_blank" rel="noopener noreferrer">📊 Weights & Biases</a>
+        <a href="https://github.com/yprabhu23/ogbench" target="_blank" rel="noopener noreferrer">💻 GitHub Repository</a>
+      </div>
     </header>
 
     <article>
       <h2>Motivations</h2>
       <p>
         Over the past decade, the landscape of artificial intelligence has changed almost beyond recognition.
-        The modern era of deep learning was catalyzed in 2012 by AlexNet [1], a convolutional
+        The modern era of deep learning was catalyzed in 2012 by AlexNet <a href="#ref1">[1]</a>, a convolutional
         network that dramatically outperformed traditional pipelines on the ImageNet benchmark. AlexNet did more than
         win a competition: it provided a concrete demonstration that large, deep neural networks could be trained at
         scale and deployed on real-world perception problems. In the years that followed, deep learning rapidly
@@ -215,7 +294,7 @@
         RL pipelines have relied on relatively shallow convolutional networks such as IMPALA, which are easy to train
         from scratch and provide strong locality biases. At the same time, modern vision research has produced a wide
         range of powerful encoders, including deep ResNets, Vision Transformers (ViT), and self-supervised models like
-        DINOv3 [2]. These models achieve impressive performance on classification, segmentation, and retrieval, but it
+        DINOv3 <a href="#ref2">[2]</a>. These models achieve impressive performance on classification, segmentation, and retrieval, but it
         remains unclear whether—and how—their representations transfer to offline goal-conditioned control.
       </p>
 
@@ -225,7 +304,7 @@
         <strong>How does the choice of visual encoder affect the performance of offline goal-conditioned reinforcement
         learning and behavioral cloning on pixel-based tasks?</strong>
         <br><br>
-        To answer this question, we turn to OGBench [3], a benchmark that standardizes offline GCRL evaluation across dozens
+        To answer this question, we turn to OGBench <a href="#ref3">[3]</a>, a benchmark that standardizes offline GCRL evaluation across dozens
         of environments. OGBench uses an IMPALA-style encoder by default, effectively fixing the representation and
         varying only the algorithm. In contrast, we fix the algorithm to goal-conditioned behavioral cloning (GCBC) and
         systematically vary the visual encoder.
@@ -290,7 +369,7 @@
 
       <h3>OGBench</h3>
       <p>
-        OGBench [3] is a benchmark suite designed to evaluate offline goal-conditioned RL methods across a diverse set of
+        OGBench <a href="#ref3">[3]</a> is a benchmark suite designed to evaluate offline goal-conditioned RL methods across a diverse set of
         tasks. It includes both low-dimensional state-based environments and higher-dimensional visual tasks, covering
         navigation, manipulation, locomotion, and maze-solving. OGBench standardizes data formats, evaluation protocols,
         and metrics, making it easier to compare algorithms fairly.
@@ -315,7 +394,7 @@
         A large body of work in visuomotor learning studies how to encode images into features suitable for control.
         Early RL systems relied on relatively shallow CNNs trained from scratch on individual tasks (e.g., Atari,
         DMControl), effectively letting the RL objective discover relevant features. The success of early convolutional
-        architectures on large-scale image classification, such as AlexNet [1], further motivated the use of CNN
+        architectures on large-scale image classification, such as AlexNet <a href="#ref1">[1]</a>, further motivated the use of CNN
         backbones in control pipelines. More recent approaches incorporate
         pretraining, either via supervised learning (e.g., ImageNet-pretrained ResNets) or self-supervision (e.g.,
         contrastive learning, masked autoencoding).
@@ -325,7 +404,7 @@
         Convolutional architectures such as IMPALA and ResNet provide strong spatial inductive biases and have proven
         robust in RL, especially when normalized carefully. Vision Transformers (ViT) replace convolutions with
         patch-based self-attention and achieve strong performance in high-level vision benchmarks but are known to be
-        data-hungry and less stable when trained from scratch on small datasets. Self-supervised models like DINOv3 [2]
+        data-hungry and less stable when trained from scratch on small datasets. Self-supervised models like DINOv3 <a href="#ref2">[2]</a>
         produce representations that are highly effective for classification and segmentation, but their invariances may
         obscure the fine-grained geometry needed for precise control.
       </p>
@@ -346,7 +425,7 @@
 
       <h3>3.1 Goal-Conditioned Behavioral Cloning</h3>
       <p>
-        The GCBC agent is written by OGBench. It treats each environment as an MDP \( (\mathcal{S}, \mathcal{A}, \mathcal{P}, \mathcal{R}, \gamma) \), where
+        The GCBC agent is provided by OGBench. It treats each environment as an MDP \( (\mathcal{S}, \mathcal{A}, \mathcal{P}, \mathcal{R}, \gamma) \), where
         states \(s \in \mathcal{S}\) are RGB images and actions \(a \in \mathcal{A}\) are continuous control inputs. The
         offline dataset \( \mathcal{D} = \{ (s_t, a_t, s_{t+1}) \}_{t=1}^N \) consists of transitions collected by a
         behavior policy. To train a goal-conditioned policy, hindsight relabeling is performed: for a given time step \(t\)
@@ -391,7 +470,7 @@
         <li><strong>ViT-Small (from scratch):</strong> A compact Vision Transformer with patch-based self-attention,
           trained end-to-end on the offline trajectories. This tests the architectural inductive bias of transformers
           under limited data.</li>
-        <li><strong>DINOv3-S/16 (frozen) [2]:</strong> A self-supervised ViT encoder used as a fixed feature extractor. Only
+        <li><strong>DINOv3-S/16 (frozen) <a href="#ref2">[2]</a>:</strong> A self-supervised ViT encoder used as a fixed feature extractor. Only
           the policy head is trained, probing the alignment between pretrained features and control objectives.</li>
       </ul>
 
@@ -528,20 +607,55 @@
       </p>
 
       <p>
-        ResNet50 and DINOv3-S/16 [2] achieve moderate but clearly inferior performance (0.108 and 0.076, respectively),
-        while the ViT-Small performs the worst (0.03). When we inspect training and validation losses (Appendix C), we find
+        ResNet50 and DINOv3-S/16 <a href="#ref2">[2]</a> achieve moderate but clearly inferior performance (0.108 and 0.076, respectively),
+        while the ViT-Small performs the worst (0.03). When we inspect training and validation losses, we find
         that ResNet50 and DINOv3 converge more slowly and exhibit higher variance across epochs, consistent with more
         unstable optimization. The ViT-Small shows clear signs of underfitting or representation collapse: loss decreases
         initially but plateaus at a high value, indicating that the model fails to fully exploit the available data.
       </p>
 
+      <div class="figure-grid">
+        <figure>
+          <img src="antmaze training loss.png" alt="AntMaze training loss curves for different encoders">
+          <figcaption>Figure 1: Training loss curves for AntMaze-Medium task across different visual encoders. IMPALA shows rapid convergence to low loss values, while ResNet50 and DINOv3 exhibit slower convergence with higher variance. ViT-Small plateaus early at high loss, indicating underfitting.</figcaption>
+        </figure>
+        <figure>
+          <img src="antmaze validation loss.png" alt="AntMaze validation loss curves for different encoders">
+          <figcaption>Figure 2: Validation loss curves for AntMaze-Medium task. IMPALA maintains low validation loss throughout training, confirming its strong generalization. ResNet50 and DINOv3 show higher validation loss, while ViT-Small fails to reduce validation error effectively.</figcaption>
+        </figure>
+      </div>
+
       <p>
         One plausible explanation is that AntMaze requires a mixture of local and global reasoning: the agent needs to
         understand maze topology and wall locations but does not require extremely fine-grained texture or pose
-        estimation. IMPALA’s inductive bias and modest depth may strike the right balance here. In contrast, deeper
+        estimation. IMPALA's inductive bias and modest depth may strike the right balance here. In contrast, deeper
         networks and transformers might be over-parameterized for the dataset size, making them harder to train
         effectively in an offline regime without pretraining.
       </p>
+
+      <p>
+        The following videos illustrate the qualitative differences in navigation behavior between encoders. ResNet50
+        demonstrates moderate navigation capability, successfully reaching the goal in some episodes but with less
+        consistent path planning than IMPALA. In contrast, ViT-Small struggles significantly with navigation, often
+        getting stuck or failing to make progress toward the goal, consistent with its low success rate (0.03).
+      </p>
+
+      <div class="figure-grid">
+        <figure>
+          <video controls>
+            <source src="antmaze-resnet50.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <figcaption>Video 1: AntMaze-Medium navigation behavior with ResNet50 encoder. The agent demonstrates moderate navigation capability, successfully navigating through the maze in some episodes but with less consistent path planning compared to IMPALA. Success rate: 0.108.</figcaption>
+        </figure>
+        <figure>
+          <video controls>
+            <source src="antmaze-ViT.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <figcaption>Video 2: AntMaze-Medium navigation behavior with ViT-Small encoder. The agent struggles significantly with navigation, often getting stuck or failing to make progress toward the goal. This poor performance aligns with the low success rate (0.03) and the underfitting observed in the loss curves.</figcaption>
+        </figure>
+      </div>
 
       <h3>4.2 Visual Cube Manipulation</h3>
       <p>
@@ -553,19 +667,68 @@
 
       <p>
         Visual Cube demands accurate perception of cube orientation, edge alignment, and depth cues under frequent
-        occlusions from the robot hand. Our qualitative analysis suggests that ResNet50’s deeper feature hierarchy
+        occlusions from the robot hand. Our qualitative analysis suggests that ResNet50's deeper feature hierarchy
         enables it to build more robust representations of cube pose than IMPALA, which appears to capture only coarse
-        shape and position. The training and validation curves (Appendix C) show that ResNet50 converges to a lower
+        shape and position. The training and validation curves show that ResNet50 converges to a lower
         imitation loss on this task than other encoders, consistent with its superior performance.
       </p>
 
+      <div class="figure-grid">
+        <figure>
+          <img src="single cube training loss.png" alt="Single Cube training loss curves for different encoders">
+          <figcaption>Figure 3: Training loss curves for Visual Cube manipulation task. ResNet50 achieves the lowest training loss, demonstrating its superior capacity for learning fine-grained geometric representations. IMPALA converges to a higher loss, while transformer-based encoders (ViT-Small, DINOv3) fail to learn effectively.</figcaption>
+        </figure>
+        <figure>
+          <img src="single cube validation loss.png" alt="Single Cube validation loss curves for different encoders">
+          <figcaption>Figure 4: Validation loss curves for Visual Cube manipulation task. ResNet50's lower validation loss confirms its better generalization to unseen cube poses. The gap between ResNet50 and other encoders is more pronounced than in AntMaze, highlighting the importance of deeper feature hierarchies for precise manipulation tasks.</figcaption>
+        </figure>
+      </div>
+
       <p>
-        Our ViT-Small and DINOv3-S/16 [2] both fail to solve the task, achieving zero success rate. This aligns with the intuition
+        Our ViT-Small and DINOv3-S/16 <a href="#ref2">[2]</a> both fail to solve the task, achieving zero success rate. This aligns with the intuition
         that compressing all spatial information into a single CLS token without explicit spatial inductive biases
-        makes it difficult to preserve fine-grained pose information. Even though DINOv3 [2] is pretrained, its invariances
+        makes it difficult to preserve fine-grained pose information. Even though DINOv3 <a href="#ref2">[2]</a> is pretrained, its invariances
         to cropping, color jitter, and viewpoint are likely misaligned with the demands of low-level manipulation, where
         small visual differences correspond to large changes in the underlying state.
       </p>
+
+      <p>
+        The following videos demonstrate the qualitative differences in manipulation behavior across all four encoders.
+        ResNet50 shows precise manipulation with accurate cube pose alignment, while IMPALA struggles with fine-grained
+        control. Both transformer-based encoders (ViT-Small and DINOv3) fail to achieve successful manipulation,
+        consistent with their zero success rates.
+      </p>
+
+      <div class="figure-grid">
+        <figure>
+          <video controls>
+            <source src="single-cube-resnet50.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <figcaption>Video 3: Visual Cube manipulation with ResNet50 encoder. The agent demonstrates precise manipulation with accurate cube pose alignment, successfully matching the target orientation. This superior performance aligns with the highest success rate (0.132) among all encoders on this task.</figcaption>
+        </figure>
+        <figure>
+          <video controls>
+            <source src="single-cube-impala.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <figcaption>Video 4: Visual Cube manipulation with IMPALA encoder. The agent struggles with fine-grained control, capturing only coarse shape and position but failing to achieve precise cube orientation alignment. Success rate: 0.02.</figcaption>
+        </figure>
+        <figure>
+          <video controls>
+            <source src="single-cube-DinoV3.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <figcaption>Video 5: Visual Cube manipulation with DINOv3-S/16 encoder. The agent fails to achieve successful manipulation, unable to align the cube to the target pose. This failure demonstrates the misalignment between self-supervised pretraining invariances and the fine-grained geometric demands of manipulation. Success rate: 0.00.</figcaption>
+        </figure>
+        <figure>
+          <video controls>
+            <source src="single-cube-ViT.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <figcaption>Video 6: Visual Cube manipulation with ViT-Small encoder. The agent fails to solve the manipulation task, unable to preserve fine-grained pose information needed for precise control. This aligns with the zero success rate and the underfitting observed in training. Success rate: 0.00.</figcaption>
+        </figure>
+      </div>
 
       <h3>Insights</h3>
       <p>
@@ -577,10 +740,110 @@
         <li>Transformer-based encoders (ViT-Small, DINOv3-S/16) perform poorly in both settings under our training
           protocol.</li>
       </ul>
+
+      <h4>4.3.1 Task-Encoder Alignment</h4>
+      <p>
+        The stark contrast in encoder performance across tasks reveals a fundamental principle: <em>task-encoder alignment</em>
+        matters more than raw capacity or pretraining status. AntMaze navigation requires understanding global spatial
+        relationships—recognizing walls, corridors, and open spaces—but does not demand pixel-perfect precision. IMPALA's
+        shallow convolutional architecture, with its strong locality bias and modest depth, captures these coarse geometric
+        features efficiently. The training and validation loss curves (Figures 1–2) show that IMPALA converges rapidly
+        to low loss values, indicating that its representation space is well-matched to the navigation task's requirements.
+      </p>
+
+      <p>
+        In contrast, Visual Cube manipulation demands fine-grained geometric reasoning: the agent must perceive subtle
+        differences in cube orientation, edge alignment, and depth cues under frequent occlusions. ResNet50's deeper
+        feature hierarchy enables it to build hierarchical representations that capture both low-level edges and
+        high-level pose information. The loss curves (Figures 3–4) reveal that ResNet50 achieves significantly lower
+        training and validation loss on this task than IMPALA, confirming that its increased capacity is necessary and
+        effectively utilized for precise manipulation.
+      </p>
+
+      <h4>4.3.2 The Capacity-Data Trade-off</h4>
+      <p>
+        Our results highlight a critical tension between model capacity and dataset size in offline RL. ResNet50's
+        superior performance on Visual Cube suggests that deeper networks can learn more expressive representations when
+        the task demands it. However, on AntMaze, where the task requirements are simpler, ResNet50's additional capacity
+        appears to be a liability: it converges more slowly and achieves higher validation loss than IMPALA. This
+        suggests that in offline settings with fixed datasets, over-parameterization can lead to worse generalization,
+        especially when the task does not require the additional representational capacity.
+      </p>
+
+      <p>
+        The transformer-based encoders (ViT-Small and DINOv3-S/16) exemplify this trade-off most dramatically. Despite
+        ViT-Small having comparable parameter count to ResNet50, it fails to learn effective representations in both
+        tasks. The loss curves show early plateauing at high loss values, indicating that the transformer architecture
+        struggles to extract relevant features from the limited offline data. This aligns with the well-known data
+        efficiency gap between CNNs and transformers: transformers require significantly more data to learn effective
+        representations, which is particularly problematic in offline RL where data collection is expensive and the
+        dataset is fixed.
+      </p>
+
+      <h4>4.3.3 Pretraining and Invariance Mismatch</h4>
+      <p>
+        DINOv3-S/16's failure on both tasks, despite being pretrained on large-scale image data, reveals a critical
+        insight: <em>pretraining quality does not guarantee transfer to control</em>. DINOv3 was trained with
+        self-supervised objectives that encourage invariances to cropping, color jitter, and viewpoint changes—features
+        that are beneficial for high-level vision tasks like classification and segmentation. However, these same
+        invariances are detrimental for control tasks where small visual differences correspond to large changes in the
+        underlying state. The videos (Videos 5–6) show that DINOv3 fails to achieve successful manipulation, unable to
+        distinguish between subtly different cube poses that require different actions.
+      </p>
+
+      <p>
+        This invariance mismatch is particularly pronounced in Visual Cube, where precise pose estimation is critical.
+        Even though DINOv3's frozen features might capture rich semantic information, they lack the geometric precision
+        needed for manipulation. The validation loss curves show that DINOv3 fails to reduce error effectively, suggesting
+        that the pretrained features are fundamentally misaligned with the control objective, and that training only the
+        policy head is insufficient to bridge this gap.
+      </p>
+
+      <h4>4.3.4 Architectural Inductive Biases</h4>
+      <p>
+        The performance differences between CNNs and transformers highlight the importance of architectural inductive
+        biases. Convolutional networks, with their translation equivariance and locality bias, are naturally suited for
+        processing spatial structure in images. This bias helps them learn robust representations even with limited data,
+        as evidenced by IMPALA's strong performance on AntMaze and ResNet50's success on Visual Cube.
+      </p>
+
+      <p>
+        Transformers, in contrast, rely on self-attention to learn spatial relationships from scratch. While this
+        flexibility can be powerful with sufficient data, it becomes a liability in data-limited settings. The ViT-Small
+        encoder's poor performance suggests that without explicit spatial inductive biases, the model struggles to learn
+        the geometric structure needed for control. The early loss plateauing indicates that the attention mechanism
+        fails to discover meaningful spatial patterns from the offline trajectories, leading to representation collapse
+        or underfitting.
+      </p>
+
+      <h4>4.3.5 Implications for Offline GCRL</h4>
+      <p>
+        These insights have several important implications for offline goal-conditioned RL research. First, encoder
+        choice should be treated as a first-class hyperparameter, not an afterthought. The dramatic performance
+        differences we observe (e.g., ResNet50 achieving 0.132 success rate on Visual Cube versus IMPALA's 0.02)
+        demonstrate that encoder selection can have a larger impact than algorithmic choices in some settings.
+      </p>
+
+      <p>
+        Second, the task-encoder alignment principle suggests that researchers should carefully match encoder
+        architectures to task requirements. For tasks requiring coarse spatial reasoning (like navigation), simpler
+        architectures may be sufficient and more robust. For tasks requiring fine-grained geometric precision (like
+        manipulation), deeper networks with stronger representational capacity may be necessary.
+      </p>
+
+      <p>
+        Finally, our results caution against blindly importing state-of-the-art vision models into control pipelines.
+        Pretrained models like DINOv3, despite their success in high-level vision tasks, may not transfer effectively to
+        control without careful adaptation. Future work should explore task-specific adaptation strategies, such as
+        lightweight fine-tuning, adapter layers, or hybrid architectures that combine the benefits of pretraining with
+        the geometric precision needed for control.
+      </p>
+
       <p>
         These observations support a nuanced view: encoder performance in offline GCRL depends not only
         on capacity or pretraining quality, but also on how inductive biases and invariances interact with the specific
-        structure of the task.
+        structure of the task. The "best" encoder is not universal—it depends on the task's perceptual demands, the
+        available data, and the alignment between the encoder's representational capabilities and the control objective.
       </p>
 
       <h2>Discussion and Future Work</h2>
@@ -724,8 +987,9 @@
       </ul>
 
       <p>
-        In a full paper version, we would include plots of these curves (e.g., Figure C.1–C.4) for each encoder-task
-        pair. For brevity, we omit the rendered figures here but follow standard practice in logging and monitoring.
+        The training and validation loss curves for both tasks are shown in Figures 1–4 in the Results section. These
+        visualizations confirm the qualitative trends described above and provide insight into the optimization dynamics
+        of each encoder architecture.
       </p>
       
     </article>
@@ -733,14 +997,14 @@
     <h2>References</h2>
     <ol style="line-height:1.6">
 
-      <li>
+      <li id="ref1">
         A. Krizhevsky, I. Sutskever, and G. E. Hinton.
         <strong>ImageNet classification with deep convolutional neural networks.</strong>
         In <em>Proceedings of the 26th International Conference on Neural Information Processing Systems</em>, 
         pages 1097–1105, 2012.
       </li>
 
-      <li>
+      <li id="ref2">
         O. Siméoni, H. V. Vo, M. Seitzer, F. Baldassarre, M. Oquab, C. Jose, V. Khalidov,
         M. Szafraniec, S. Yi, M. Ramamonjisoa, F. Massa, D. Haziza, L. Wehrstedt,
         J. Wang, T. Darcet, T. Moutakanni, L. Sentana, C. Roberts, A. Vedaldi, 
@@ -749,7 +1013,7 @@
         <em>arXiv preprint arXiv:2508.10104</em>, 2025.
       </li>
 
-      <li>
+      <li id="ref3">
         S. Park, K. Frans, B. Eysenbach, and S. Levine.
         <strong>OGBench: Benchmarking offline goal-conditioned RL.</strong>
         <em>arXiv preprint arXiv:2410.20092</em>, 2025.
@@ -782,4 +1046,3 @@
   </div>
 </body>
 </html>
-
